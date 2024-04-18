@@ -76,35 +76,41 @@ Matrix4x4 Matrix4x4::MakeAffineMatrix(const Vector3& scale, const Vector3& rotat
 
 	return affineMatrix;
 }
-
 Matrix4x4 Matrix4x4::Inverse(const Matrix4x4& m) {
-	Matrix4x4 result;
+	Matrix4x4 invMatrix;
 
-	// 行列Aを複製する
-	Matrix4x4 temp = m;
+	float det =
+		m.m[0][0] * (m.m[1][1] * m.m[2][2] - m.m[1][2] * m.m[2][1]) +
+		m.m[0][1] * (m.m[1][2] * m.m[2][0] - m.m[1][0] * m.m[2][2]) +
+		m.m[0][2] * (m.m[1][0] * m.m[2][1] - m.m[1][1] * m.m[2][0]);
 
-	// ガウス・ジョルダン法を用いて逆行列を計算
-	for (int i = 0; i < 4; ++i) {
-		// 対角要素を1にする
-		float divisor = temp.m[i][i];
-		for (int j = 0; j < 4; ++j) {
-			temp.m[i][j] /= divisor;
-			result.m[i][j] /= divisor;
-		}
-
-		// 対角要素以外を0にする
-		for (int k = 0; k < 4; ++k) {
-			if (k != i) {
-				float multiplier = temp.m[k][i];
-				for (int j = 0; j < 4; ++j) {
-					temp.m[k][j] -= temp.m[i][j] * multiplier;
-					result.m[k][j] -= result.m[i][j] * multiplier;
-				}
-			}
-		}
+	if (det == 0) {
+		return invMatrix; // ゼロ除算のエラー処理
 	}
 
-	return result;
+	float invDet = 1.0f / det;
+
+	invMatrix.m[0][0] = (m.m[1][1] * m.m[2][2] - m.m[1][2] * m.m[2][1]) * invDet;
+	invMatrix.m[0][1] = (m.m[0][2] * m.m[2][1] - m.m[0][1] * m.m[2][2]) * invDet;
+	invMatrix.m[0][2] = (m.m[0][1] * m.m[1][2] - m.m[0][2] * m.m[1][1]) * invDet;
+	invMatrix.m[0][3] = 0.0f;
+
+	invMatrix.m[1][0] = (m.m[1][2] * m.m[2][0] - m.m[1][0] * m.m[2][2]) * invDet;
+	invMatrix.m[1][1] = (m.m[0][0] * m.m[2][2] - m.m[0][2] * m.m[2][0]) * invDet;
+	invMatrix.m[1][2] = (m.m[0][2] * m.m[1][0] - m.m[0][0] * m.m[1][2]) * invDet;
+	invMatrix.m[1][3] = 0.0f;
+
+	invMatrix.m[2][0] = (m.m[1][0] * m.m[2][1] - m.m[1][1] * m.m[2][0]) * invDet;
+	invMatrix.m[2][1] = (m.m[0][1] * m.m[2][0] - m.m[0][0] * m.m[2][1]) * invDet;
+	invMatrix.m[2][2] = (m.m[0][0] * m.m[1][1] - m.m[0][1] * m.m[1][0]) * invDet;
+	invMatrix.m[2][3] = 0.0f;
+
+	invMatrix.m[3][0] = -(m.m[3][0] * invMatrix.m[0][0] + m.m[3][1] * invMatrix.m[1][0] + m.m[3][2] * invMatrix.m[2][0]);
+	invMatrix.m[3][1] = -(m.m[3][0] * invMatrix.m[0][1] + m.m[3][1] * invMatrix.m[1][1] + m.m[3][2] * invMatrix.m[2][1]);
+	invMatrix.m[3][2] = -(m.m[3][0] * invMatrix.m[0][2] + m.m[3][1] * invMatrix.m[1][2] + m.m[3][2] * invMatrix.m[2][2]);
+	invMatrix.m[3][3] = 1.0f;
+
+	return invMatrix;
 }
 
 //座標系変換
