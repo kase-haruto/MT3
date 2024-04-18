@@ -4,6 +4,30 @@
 
 const char kWindowTitle[] = "LE2A_09_カセ_ハルト_";
 
+//平行移動行列
+Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
+	Matrix4x4 result = {
+		1,0,0,0,
+		0,1,0,0,
+		0,0,1,0,
+		translate.x,translate.y,translate.z,1
+	};
+	return result;
+}
+
+//拡大縮小行列
+Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
+	Matrix4x4 result = {
+		scale.x,0,0,0,
+		0,scale.y,0,0,
+		0,0,scale.z,0,
+		0,0,0,1
+	};
+	return result;
+}
+
+
+//回転行列
 Matrix4x4 MakerotateXMatrix(float theta) {
 	Matrix4x4 result = {
 		1,0,0,0,
@@ -35,16 +59,22 @@ Matrix4x4 MakerotateZMatrix(float theta) {
 	return result;
 }
 
-const int kColumWidth = 60;
-const int kRowHeight = 60;
 
-void PrintVector3(int x, int y, const Vector3& v, const char* label) {
-	Novice::ScreenPrintf(x, y, "%.02f", v.x);
-	Novice::ScreenPrintf(x + kColumWidth, y, "%.02f", v.y);
-	Novice::ScreenPrintf(x + kColumWidth * 2, y, "%.02f", v.z);
-	Novice::ScreenPrintf(x + kColumWidth * 3, y, "%s", label);
+//3次元アフィン変換行列
+Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
+	Matrix4x4 affineMatrix;
+	Matrix4x4 translateMatrix = MakeTranslateMatrix(translate);
+	Matrix4x4 scaleMatrix = MakeScaleMatrix(scale);
+
+	Matrix4x4 rotateXMatrix = MakerotateXMatrix(rotate.x);
+	Matrix4x4 rotateYMatrix = MakerotateYMatrix(rotate.y);
+	Matrix4x4 rotateZMatrix = MakerotateZMatrix(rotate.z);
+	Matrix4x4 rotateMatrix = Matrix4x4::Multiply(rotateXMatrix, Matrix4x4::Multiply(rotateYMatrix, rotateZMatrix));
+
+	affineMatrix = Matrix4x4::Multiply(scaleMatrix, Matrix4x4::Multiply(rotateMatrix, translateMatrix));
+
+	return affineMatrix;
 }
-
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -56,14 +86,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = {0};
 	char preKeys[256] = {0};
 
+	Vector3 scale{ 1.2f,0.79f,-2.1f };
 	Vector3 rotate{ 0.4f,1.43f,-0.8f };
-	Matrix4x4 rotateXMatrix = MakerotateXMatrix(rotate.x);
-	Matrix4x4 rotateYMatrix = MakerotateYMatrix(rotate.y);
-	Matrix4x4 rotateZMatrix = MakerotateZMatrix(rotate.z);
-	Matrix4x4 rotateXYZMatrix = Matrix4x4::Multiply(rotateXMatrix, Matrix4x4::Multiply(rotateYMatrix, rotateZMatrix));
-
-	Vector3 v1{ 1.2f,-3.9f,2.5f };
-	Vector3 v2{ 2.8f,0.4f,-1.3f };
+	Vector3 translate{ 2.7f,-4.15f,1.57f };
+	Matrix4x4 worldMatrix = MakeAffineMatrix(scale, rotate, translate);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -74,10 +100,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		memcpy(preKeys, keys, 256);
 		Novice::GetHitKeyStateAll(keys);
 
-		Matrix4x4::MatrixScreenPrint(0, 0, rotateXMatrix, "rotateXMatrix");
-		Matrix4x4::MatrixScreenPrint(0, 20 * 5, rotateYMatrix, "rotateYMatrix");
-		Matrix4x4::MatrixScreenPrint(0, 20 * 5 * 2, rotateZMatrix, "rotateZMatrix");
-		Matrix4x4::MatrixScreenPrint(0, 20 * 5 * 3, rotateXYZMatrix, "rotateXYZMatrix");
+		Matrix4x4::MatrixScreenPrint(0, 0, worldMatrix, "worldMatrix");
 
 		// フレームの終了
 		Novice::EndFrame();
