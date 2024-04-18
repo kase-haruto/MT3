@@ -1,25 +1,34 @@
 #include <Novice.h>
-#include"Matrix4x4.h"
+#include<assert.h>
+#include "Matrix4x4.h"
 #include"Vector3.h"
 #include"Vector4.h"
-#include<vector>
-#include<stdint.h>
-#include<assert.h>
-
 
 const char kWindowTitle[] = "LE2A_09_カセ_ハルト";
 
-const int kWindowWidth = 1280;
-const int kWindowHeight = 720;
-
-Vector3 Cross(const Vector3& v1, const Vector3& v2) {
-	Vector3 result;
-	result.x = v1.y * v2.z - v1.z * v2.y;
-	result.y = v1.z * v2.x - v1.x * v2.z;
-	result.z = v1.x * v2.y - v1.y * v2.x;
+//平行移動行列
+Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
+	Matrix4x4 result = {
+		1,0,0,0,
+		0,1,0,0,
+		0,0,1,0,
+		translate.x,translate.y,translate.z,1
+	};
 	return result;
 }
 
+//拡大縮小行列
+Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
+	Matrix4x4 result = {
+		scale.x,0,0,0,
+		0,scale.y,0,0,
+		0,0,scale.z,0,
+		0,0,0,1
+	};
+	return result;
+}
+
+//座標変換
 Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
 	Vector3 result = { 0, 0, 0 };
 
@@ -42,6 +51,16 @@ Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
 	return result;
 }
 
+const int kColumWidth = 60;
+const int kRowHeight = 60;
+
+void PrintVector3(int x, int y, const Vector3& v, const char* label) {
+	Novice::ScreenPrintf(x, y, "%.02f", v.x);
+	Novice::ScreenPrintf(x + kColumWidth, y, "%.02f", v.y);
+	Novice::ScreenPrintf(x + kColumWidth * 2, y, "%.02f", v.z);
+	Novice::ScreenPrintf(x + kColumWidth * 3, y, "%s", label);
+}
+
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -53,32 +72,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = {0};
 	char preKeys[256] = {0};
 
-	Vector3 cameraPosition{ 0.0f,0.0f,0.0f };
-
-	Vector3 rotate{ 0.0f,0.0f,0.0f };
-	Vector3 translate{ 0.0f,0.0f,200.0f };
-
-	Matrix4x4 worldMatrix;
-
-	Matrix4x4 cameraMatrix;
-	Matrix4x4 viewMatrix;
-	Matrix4x4 projectionMatrix;
-	Matrix4x4 worldViewProjectionMatrix;
-	Matrix4x4 viewportMatrix;
-
-	Vector3 screenVertices[3];
-
-
-	Vector3 kLocalVertices[3] = {
-		{0.0f,25.0f,0.0f},
-		{25.0f,-25.0f,0.0f},
-		{-25.0f,-25.0f,0.0f}
+	Vector3 translate{ 4.1f,2.6f,0.8f };
+	Vector3 scale{ 1.5f,5.2f,7.3f };
+	Matrix4x4 translateMatrix = MakeTranslateMatrix(translate);
+	Matrix4x4 scaleMatrix = MakeScaleMatrix(scale);
+	Vector3 point{ 2.3f,3.8f,1.4f };
+	Matrix4x4 transformMatrix = {
+		1.0f,2.0f,3.0f,4.0f,
+		3.0f,1.0f,1.0f,2.0f,
+		1.0f,4.0f,2.0f,3.0f,
+		2.0f,2.0f,1.0f,3.0f
 	};
 
+	Vector3 transfomed = Transform(point, transformMatrix);
 
-	Vector3 v1{ 1.2f,-3.9f,2.5f };
-	Vector3 v2{ 2.8f,0.4f,-1.3f };
-	Vector3 cross = Cross(v1, v2);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -89,51 +96,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		memcpy(preKeys, keys, 256);
 		Novice::GetHitKeyStateAll(keys);
 
-		//自動でY軸で回転する
-		rotate.y += 0.05f;
-
-		//キーで三角形の移動を行う
-		if (keys[DIK_W]) {
-			translate.z += 10.0f;
-		} else if (keys[DIK_S]) {
-			translate.z -= 10.0f;
-		}
-
-		if (keys[DIK_A]) {
-			translate.x -= 10.0f;
-		} else if (keys[DIK_D]) {
-			translate.x += 10.0f;
-		}
-
-
-		// 各行列の計算
-		worldMatrix = Matrix4x4::MakeAffineMatrix({ 1.0f, 1.0f, 1.0f }, rotate, translate);
-		cameraMatrix = Matrix4x4::MakeAffineMatrix({ 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, cameraPosition);
-		viewMatrix = Matrix4x4::Inverse(cameraMatrix);
-		projectionMatrix = Matrix4x4::MakePerspectiveFovMatrix(0.45f, float(kWindowWidth) / float(kWindowHeight), 0.1f, 100.0f);
-		//wvpMatrixを作成
-		worldViewProjectionMatrix = Matrix4x4::Multiply(worldMatrix, Matrix4x4::Multiply(viewMatrix, projectionMatrix));
-		//viewportMatrixを作成
-		viewportMatrix = Matrix4x4::MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
-
-		for (uint32_t i = 0; i < 3; ++i) {
-			Vector3 ndcVertex = Transform(kLocalVertices[i], worldViewProjectionMatrix);
-			screenVertices[i] = Transform(ndcVertex, viewportMatrix);
-		}
-
-
-
-		//クロス積の表示
-		Vector3::PrintVector3(0, 0, cross, "cross");
-
-		// 三角形の描画
-		Novice::DrawTriangle(
-			int(screenVertices[0].x), int(screenVertices[0].y),
-			int(screenVertices[1].x), int(screenVertices[1].y),
-			int(screenVertices[2].x), int(screenVertices[2].y),
-			RED, kFillModeSolid
-		);
-
+		PrintVector3(0, 0, transfomed, "transformed");
+		Matrix4x4::MatrixScreenPrint(0, 20, translateMatrix, "translateMatrix");
+		Matrix4x4::MatrixScreenPrint(0, 30 * 5, scaleMatrix, "scaleMatrix");
 
 		// フレームの終了
 		Novice::EndFrame();
