@@ -1,138 +1,64 @@
 #include <Novice.h>
-#include<math.h>
+#include<assert.h>
+#include "Matrix4x4.h"
+#include"Vector3.h"
+#include"Vector4.h"
 
 const char kWindowTitle[] = "LE2A_09_カセ_ハルト";
 
-struct Matrix4x4 {
-	float m[4][4];
-};
-
-//	行列の加法
-Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2) {
-	Matrix4x4 result;
-	for (int i = 0; i < 4; ++i) {
-		for (int j = 0; j < 4; ++j) {
-			result.m[i][j] = m1.m[i][j] + m2.m[i][j];
-		}
-	}
+//平行移動行列
+Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
+	Matrix4x4 result = {
+		1,0,0,0,
+		0,1,0,0,
+		0,0,1,0,
+		translate.x,translate.y,translate.z,1
+	};
 	return result;
 }
 
-//	行列の減法
-Matrix4x4 Subtract(const Matrix4x4& m1, const Matrix4x4& m2) {
-	Matrix4x4 result;
-	for (int i = 0; i < 4; ++i) {
-		for (int j = 0; j < 4; ++j) {
-			result.m[i][j] = m1.m[i][j] - m2.m[i][j];
-		}
-	}
+//拡大縮小行列
+Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
+	Matrix4x4 result = {
+		scale.x,0,0,0,
+		0,scale.y,0,0,
+		0,0,scale.z,0,
+		0,0,0,1
+	};
 	return result;
 }
 
-//	行列の積
-Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
-	Matrix4x4 result;
-	for (int i = 0; i < 4; ++i) {
-		for (int j = 0; j < 4; ++j) {
-			float sum = 0.0f;
-			for (int k = 0; k < 4; ++k) {
-				sum += m1.m[i][k] * m2.m[k][j];
-			}
-			result.m[i][j] = sum;
-		}
-	}
+//座標変換
+Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
+	Vector3 result = { 0, 0, 0 };
+
+	// 同次座標系への変換
+	// 変換行列を適用
+	Vector4 homogeneousCoordinate(
+		vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + matrix.m[3][0],
+		vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + matrix.m[3][1],
+		vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2] + matrix.m[3][2],
+		vector.x * matrix.m[0][3] + vector.y * matrix.m[1][3] + vector.z * matrix.m[2][3] + matrix.m[3][3]
+	);
+
+	// 同次座標系から3次元座標系に戻す
+	float w = homogeneousCoordinate.w;
+	assert(w != 0.0f); // wが0でないことを確認
+	result.x = homogeneousCoordinate.x / w;
+	result.y = homogeneousCoordinate.y / w;
+	result.z = homogeneousCoordinate.z / w;
+
 	return result;
 }
 
+const int kColumWidth = 60;
+const int kRowHeight = 60;
 
-// 行列の逆行列を計算する関数
-Matrix4x4 Inverse(const Matrix4x4& m) {
-	// 拡大行列の作成
-	float augmentedMatrix[4][8];
-	for (int i = 0; i < 4; ++i) {
-		for (int j = 0; j < 4; ++j) {
-			// 単位行列を右側に配置
-			augmentedMatrix[i][j] = m.m[i][j];
-			augmentedMatrix[i][j + 4] = (i == j) ? 1.0f : 0.0f;
-		}
-	}
-
-	/*===============================================
-		ガウス・ジョルダン法を使用した逆行列
-	================================================*/
-
-	for (int i = 0; i < 4; ++i) {
-
-		float pivot = augmentedMatrix[i][i];
-
-		for (int j = 0; j < 8; ++j) {
-			augmentedMatrix[i][j] /= pivot;
-		}
-
-		// 他の行の要素を0にする
-		for (int k = 0; k < 4; ++k) {
-			if (k != i) {
-				float factor = augmentedMatrix[k][i];
-				for (int j = 0; j < 8; ++j) {
-					augmentedMatrix[k][j] -= factor * augmentedMatrix[i][j];
-				}
-			}
-		}
-	}
-
-	// 逆行列の取り出し
-	Matrix4x4 invMatrix;
-
-	for (int i = 0; i < 4; ++i) {
-		for (int j = 0; j < 4; ++j) {
-
-			invMatrix.m[i][j] = augmentedMatrix[i][j + 4];
-
-		}
-	}
-
-	return invMatrix;
-}
-
-
-//	転置行列
-Matrix4x4 Transpose(const Matrix4x4& m) {
-	Matrix4x4 result;
-	for (int i = 0; i < 4; ++i) {
-		for (int j = 0; j < 4; ++j) {
-			result.m[i][j] = m.m[j][i];
-		}
-	}
-	return result;
-}
-
-
-static const int kRowHeight = 20;
-static const int kColumnWidth = 60;
-
-void MatrixScreenPrint(int x, int y, const Matrix4x4& mrix, const char* process) {
-	Novice::ScreenPrintf(x, y, "%s", process);
-	for (int row = 0; row < 4; ++row) {
-		for (int column = 0; column < 4; ++column) {
-			Novice::ScreenPrintf(
-				x + column * kColumnWidth, (y + row * kRowHeight) + 20, "%6.2f", mrix.m[row][column]);
-		}
-	}
-}
-
-// 単位行列の作成
-Matrix4x4 MakeIdentity4x4() {
-	Matrix4x4 identity;
-	for (int i = 0; i < 4; ++i) {
-		for (int j = 0; j < 4; ++j) {
-			if (i == j) {
-				identity.m[i][j] = 1.0f;
-			} else {
-				identity.m[i][j] = 0.0f;
-			}
-		}
-	}
-	return identity;
+void PrintVector3(int x, int y, const Vector3& v, const char* label) {
+	Novice::ScreenPrintf(x, y, "%.02f", v.x);
+	Novice::ScreenPrintf(x + kColumWidth, y, "%.02f", v.y);
+	Novice::ScreenPrintf(x + kColumWidth * 2, y, "%.02f", v.z);
+	Novice::ScreenPrintf(x + kColumWidth * 3, y, "%s", label);
 }
 
 
@@ -146,24 +72,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = {0};
 	char preKeys[256] = {0};
 
-	Matrix4x4 m1 = { 3.2f,0.7f,9.6f,4.4f,
-					5.5f,1.3f,7.8f,2.1f,
-					6.9f,8.0f,2.6f,1.0f,
-					0.5f,7.2f,5.1f,3.3f };
+	Vector3 translate{ 4.1f,2.6f,0.8f };
+	Vector3 scale{ 1.5f,5.2f,7.3f };
+	Matrix4x4 translateMatrix = MakeTranslateMatrix(translate);
+	Matrix4x4 scaleMatrix = MakeScaleMatrix(scale);
+	Vector3 point{ 2.3f,3.8f,1.4f };
+	Matrix4x4 transformMatrix = {
+		1.0f,2.0f,3.0f,4.0f,
+		3.0f,1.0f,1.0f,2.0f,
+		1.0f,4.0f,2.0f,3.0f,
+		2.0f,2.0f,1.0f,3.0f
+	};
 
-	Matrix4x4 m2 = { 4.1f,6.5f,3.3f,2.2f,
-					8.8f,0.6f,9.9f,7.7f,
-					1.1f,5.5f,6.6f,0.0f,
-					3.3f,9.9f,8.8f,2.2f };
-
-	Matrix4x4 resultAdd = Add(m1, m2);
-	Matrix4x4 resultMultiply = Multiply(m1, m2);
-	Matrix4x4 resultSubtract = Subtract(m1, m2);
-	Matrix4x4 resulterseM1 = Inverse(m1);
-	Matrix4x4 resulterseM2 = Inverse(m2);
-	Matrix4x4 resultTranspose1 = Transpose(m1);
-	Matrix4x4 resultTranspose2 = Transpose(m2);
-	Matrix4x4 identity = MakeIdentity4x4();
+	Vector3 transfomed = Transform(point, transformMatrix);
 
 
 	// ウィンドウの×ボタンが押されるまでループ
@@ -175,14 +96,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		memcpy(preKeys, keys, 256);
 		Novice::GetHitKeyStateAll(keys);
 
-		MatrixScreenPrint(0, 0, resultAdd, "Add");
-		MatrixScreenPrint(0, kRowHeight * 5, resultSubtract, "Subtract");
-		MatrixScreenPrint(0, kRowHeight * 5 * 2, resultMultiply, "Multiply");
-		MatrixScreenPrint(0, kRowHeight * 5 * 3, resulterseM1, "resulterseM1");
-		MatrixScreenPrint(0, kRowHeight * 5 * 4, resulterseM2, "resulterseM2");
-		MatrixScreenPrint(kColumnWidth * 5, 0, resultTranspose1, "transposeM1");
-		MatrixScreenPrint(kColumnWidth * 5, kRowHeight * 5, resultTranspose2, "transposeM2");
-		MatrixScreenPrint(kColumnWidth * 5, kRowHeight * 5 * 2, identity, "identity");
+		PrintVector3(0, 0, transfomed, "transformed");
+		Matrix4x4::MatrixScreenPrint(0, 20, translateMatrix, "translateMatrix");
+		Matrix4x4::MatrixScreenPrint(0, 30 * 5, scaleMatrix, "scaleMatrix");
 
 		// フレームの終了
 		Novice::EndFrame();
