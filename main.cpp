@@ -2,7 +2,7 @@
 #include<cmath>
 #include"Matrix4x4.h"
 
-const char kWindowTitle[] = "LC1B_09_カセ_ハルト_";
+const char kWindowTitle[] = "LE2A_09_カセ_ハルト_";
 
 Matrix4x4 MakerotateXMatrix(float theta) {
 	Matrix4x4 result = {
@@ -54,7 +54,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Vector3 v1{ 1.2f,-3.9f,2.5f };
 	Vector3 v2{ 2.8f,0.4f,-1.3f };
-	Vector3 cross = Cross(v1, v2);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
