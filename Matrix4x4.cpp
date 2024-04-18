@@ -6,6 +6,21 @@ float cot(float angle) {
 	return 1 / std::tan(angle);
 }
 
+Matrix4x4 Matrix4x4::Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
+	Matrix4x4 result;
+
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			result.m[i][j] = 0.0f;
+			for (int k = 0; k < 4; ++k) {
+				result.m[i][j] += m1.m[i][k] * m2.m[k][j];
+			}
+		}
+	}
+
+	return result;
+}
+
 //正射影行列
 Matrix4x4 Matrix4x4::MakeOrthographicMatrix(float l, float t, float r, float b, float nearClip, float farClip) {
 	Matrix4x4 result;

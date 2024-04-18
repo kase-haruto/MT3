@@ -39,13 +39,3 @@ Vector3 Vector3::operator-=(const Vector3& other) {
 	return *this;
 }
 
-//ベクトルの乗算
-Vector3 Vector3::operator*(const Vector3& other) const {
-	return { x * other.x, y * other.y };
-}
-
-Vector3 Vector3::operator*=(const Vector3& other) {
-	this->x *= other.x;
-	this->y *= other.y;
-	return *this;
-}
