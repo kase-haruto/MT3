@@ -113,7 +113,7 @@ Matrix4x4 Matrix4x4::Inverse(const Matrix4x4& m) {
 	return invMatrix;
 }
 
-//座標系変換
+
 Vector3 Matrix4x4::Transform(const Vector3& vector, const Matrix4x4& matrix) {
 	Vector3 result = { 0, 0, 0 };
 
@@ -135,6 +135,7 @@ Vector3 Matrix4x4::Transform(const Vector3& vector, const Matrix4x4& matrix) {
 
 	return result;
 }
+
 
 
 Matrix4x4 Matrix4x4::Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
@@ -202,3 +203,4 @@ void Matrix4x4::MatrixScreenPrint(int x, int y, const Matrix4x4& matrix, const c
 		}
 	}
 }
+
