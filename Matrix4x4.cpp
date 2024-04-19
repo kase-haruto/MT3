@@ -76,6 +76,37 @@ Matrix4x4 Matrix4x4::MakeAffineMatrix(const Vector3& scale, const Vector3& rotat
 
 	return affineMatrix;
 }
+
+//Matrix4x4 Matrix4x4::Inverse(const Matrix4x4& m) {
+//	Matrix4x4 result;
+//
+//	// 行列Aを複製する
+//	Matrix4x4 temp = m;
+//
+//	// ガウス・ジョルダン法を用いて逆行列を計算
+//	for (int i = 0; i < 4; ++i) {
+//		// 対角要素を1にする
+//		float divisor = temp.m[i][i];
+//		for (int j = 0; j < 4; ++j) {
+//			temp.m[i][j] /= divisor;
+//			result.m[i][j] /= divisor;
+//		}
+//
+//		// 対角要素以外を0にする
+//		for (int k = 0; k < 4; ++k) {
+//			if (k != i) {
+//				float multiplier = temp.m[k][i];
+//				for (int j = 0; j < 4; ++j) {
+//					temp.m[k][j] -= temp.m[i][j] * multiplier;
+//					result.m[k][j] -= result.m[i][j] * multiplier;
+//				}
+//			}
+//		}
+//	}
+//
+//	return result;
+//}
+
 Matrix4x4 Matrix4x4::Inverse(const Matrix4x4& m) {
 	Matrix4x4 invMatrix;
 
@@ -114,12 +145,12 @@ Matrix4x4 Matrix4x4::Inverse(const Matrix4x4& m) {
 }
 
 
+//座標系変換
 Vector3 Matrix4x4::Transform(const Vector3& vector, const Matrix4x4& matrix) {
 	Vector3 result = { 0, 0, 0 };
 
-	// 同次座標系への変換
 	// 変換行列を適用
-	Vector4 homogeneousCoordinate(
+	Vector4 transformedVector(
 		vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + matrix.m[3][0],
 		vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + matrix.m[3][1],
 		vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2] + matrix.m[3][2],
@@ -127,11 +158,16 @@ Vector3 Matrix4x4::Transform(const Vector3& vector, const Matrix4x4& matrix) {
 	);
 
 	// 同次座標系から3次元座標系に戻す
-	float w = homogeneousCoordinate.w;
-	assert(w != 0.0f); // wが0でないことを確認
-	result.x = homogeneousCoordinate.x / w;
-	result.y = homogeneousCoordinate.y / w;
-	result.z = homogeneousCoordinate.z / w;
+	float w = transformedVector.w;
+	if (w != 0.0f) {
+		result.x = transformedVector.x / w;
+		result.y = transformedVector.y / w;
+		result.z = transformedVector.z / w;
+	} else {
+		// wが0の場合、適切な処理を行う（例：エラーハンドリング）
+		// この例では、結果を0ベクトルとして返す
+		result = { 0, 0, 0 };
+	}
 
 	return result;
 }
@@ -169,8 +205,8 @@ Matrix4x4 Matrix4x4::MakeOrthographicMatrix(float l, float t, float r, float b, 
 Matrix4x4 Matrix4x4::MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
 	Matrix4x4 result;
 	result = {
-		1 / aspectRatio * cot(fovY / 2),0,0,0,
-		0,cot(fovY / 2),0,0,
+		1 / aspectRatio * 1 / std::tan(fovY / 2),0,0,0,
+		0,1 / std::tan(fovY / 2),0,0,
 		0,0,farClip / (farClip - nearClip),1,
 		0,0,-nearClip * farClip / (farClip - nearClip),0
 	};
@@ -203,4 +239,3 @@ void Matrix4x4::MatrixScreenPrint(int x, int y, const Matrix4x4& matrix, const c
 		}
 	}
 }
-

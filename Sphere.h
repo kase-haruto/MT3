@@ -16,7 +16,7 @@ private://メンバ関数
 	
 
 public:
-	Sphere() {}
+	Sphere(Vector3 center, float radius, uint32_t color) { transform_.translation = center; radius_ = radius; color_ = color; }
 	virtual ~Sphere() {}
 
 	void Init(Vector3 center, Vector3 rotate, float radius, uint32_t color);

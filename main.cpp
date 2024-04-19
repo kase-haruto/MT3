@@ -6,30 +6,6 @@
 
 const char kWindowTitle[] = "LE2A_09_カセ_ハルト_";
 
-/// <summary>
-/// 2つのベクトルの外積を計算します
-/// </summary>
-/// <param name="v1"></param>
-/// <param name="v2"></param>
-/// <returns>外積の結果</returns>
-Vector3 Cross(const Vector3& v1, const Vector3& v2) {
-	Vector3 result;
-	result.x = v1.y * v2.z - v1.z * v2.y;
-	result.y = v1.z * v2.x - v1.x * v2.z;
-	result.z = v1.x * v2.y - v1.y * v2.x;
-	return result;
-}
-
-/// <summary>
-/// 2つのベクトルの内積を計算します。
-/// </summary>
-/// <param name="v1">ベクトル1</param>
-/// <param name="v2">ベクトル2</param>
-/// <returns>内積の結果</returns>
-float DotProduct(const Vector3& v1, const Vector3& v2) {
-	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
-}
-
 
 struct Camera {
 	Vector3 translate;
@@ -40,19 +16,55 @@ struct Camera {
 	Matrix4x4 projectionMatrix;
 	Matrix4x4 worldViewProjectionMatrix;
 	Matrix4x4 viewportMatrix;
-
-	Vector3 GetDirection();
 };
 
-Vector3 Camera::GetDirection() {
-	return Vector3(viewMatrix.m[0][2], viewMatrix.m[1][2], viewMatrix.m[2][2]);
+struct Line {
+	Vector3 origin;//始点
+	Vector3 diff;//終点への線分ベクトル
+};
+
+struct Ray {
+	Vector3 origin;
+	Vector3 diff;
+};
+
+struct Segment {
+	Vector3 origin;
+	Vector3 diff;
+};
+
+
+/// <summary>
+/// ベクトルの内積を求めます
+/// </summary>
+/// <param name="v1"></param>
+/// <param name="v2"></param>
+/// <returns>ベクトルの内積</returns>
+float Dot(const Vector3& v1, const Vector3& v2) {
+	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
+/// <summary>
+/// 正射影ベクトルを求めます
+/// </summary>
+/// <param name="v1"></param>
+/// <param name="v2"></param>
+/// <returns>計算結果を返します</returns>
+Vector3 Projection(const Vector3& v1, const Vector3& v2) {
+	Vector3 b = Vector3::Normalize(v2);
+	float d = Dot(v1, b);
+	return b * d;
+}
 
-
-/*==================================================================================================
-		グリッド線を引く関数
-===================================================================================================*/
+/// <summary>
+/// 最近接点を求めます
+/// </summary>
+/// <param name="point"></param>
+/// <param name="segment"></param>
+/// <returns>最近接点の値を返します</returns>
+Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
+	return segment.origin + Projection((point - segment.origin), segment.diff);
+}
 
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -71,8 +83,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	cam.projectionMatrix = Matrix4x4::MakePerspectiveFovMatrix(0.45f, 1280.0f / 720.0f, 0.1f, 100.0f);
 	cam.viewportMatrix = Matrix4x4::MakeViewportMatrix(0, 0, 1280.0f, 720.0f, 0.0f, 1.0f);
 
-	Sphere* sphere = new Sphere();
-	sphere->Init({ 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }, 0.5f, BLACK);
+	Segment segment{ {-2.0f,-1.0f,0.0f},{3.0f,2.0f,2.0f} };
+	Vector3 point{ -1.5f,0.6f,0.6f };
+
+	Vector3 project = Projection((point - segment.origin), segment.diff);
+	Vector3 closestPoint = ClosestPoint(point, segment);
+
+	Vector3  start;
+	Vector3 end;
+
+	Sphere* pointSphere = new Sphere(point, 0.01f, RED);
+	Sphere* closestPointSphere = new Sphere(closestPoint, 0.01f, BLACK);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -82,6 +103,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// キー入力を受け取る
 		memcpy(preKeys, keys, 256);
 		Novice::GetHitKeyStateAll(keys);
+
+
+		ImGui::Begin("segment");
+		ImGui::DragFloat3("point", &point.x, 0.01f);
+		ImGui::DragFloat3("origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("diff", &segment.diff.x, 0.01f);
+		ImGui::InputFloat3("Project", &project.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
+		ImGui::End();
 
 		ImGui::Begin("camera");
 		ImGui::DragFloat3("translate", &cam.translate.x, 0.01f);
@@ -95,7 +124,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		cam.viewMatrix = Matrix4x4::Inverse(cam.cameraMatrix);
 		Matrix4x4 viewProjectionMatrix = Matrix4x4::Multiply(cam.viewMatrix, cam.projectionMatrix);
 
-		sphere->Update();
+		//================================================================================================
+		//		線分の計算
+		//================================================================================================
+		start = Matrix4x4::Transform(Matrix4x4::Transform(segment.origin, viewProjectionMatrix), cam.viewportMatrix);
+		end = Matrix4x4::Transform(Matrix4x4::Transform((segment.origin + segment.diff), viewProjectionMatrix), cam.viewportMatrix);
+
+
 
 		//================================================================================================
 		//		グリッドの描画
@@ -103,11 +138,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Grid::Draw(viewProjectionMatrix, cam.viewportMatrix);
 
 		//================================================================================================
-		//		球体
+		//		線分の描画
 		//================================================================================================
+		Novice::DrawLine(
+			int(start.x), int(start.y),
+			int(end.x), int(end.y), WHITE
+		);
 
-		sphere->Draw(viewProjectionMatrix, cam.viewportMatrix);
-
+		//================================================================================================
+		//		球体の描画
+		//================================================================================================
+		pointSphere->Draw(viewProjectionMatrix, cam.viewportMatrix);
+		closestPointSphere->Draw(viewProjectionMatrix, cam.viewportMatrix);
 
 
 
@@ -120,7 +162,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 	}
 
-	delete sphere;
+	delete pointSphere, closestPointSphere;
 
 	// ライブラリの終了
 	Novice::Finalize();
