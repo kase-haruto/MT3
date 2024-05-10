@@ -20,6 +20,13 @@ struct Camera{
 	Matrix4x4 viewportMatrix;
 };
 
+bool IsCollision(const Sphere* s1, const Sphere* s2){
+	float distance = Vector3::Length(s1->GetCenter() - s2->GetCenter());
+	if (distance <= s1->GetRadius() + s2->GetRadius()){
+		return true;
+	}
+	return false;
+}
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
@@ -77,6 +84,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		sphere1->UpdateImGui("sphere1");
 		sphere2->UpdateImGui("sphere2");
 
+		sphere1->SetColor(WHITE);
+		sphere2->SetColor(WHITE);
+		if (IsCollision(sphere1.get(), sphere2.get())){
+			sphere1->SetColor(RED);
+			sphere2->SetColor(RED);
+		}
 
 		//================================================================================================
 		//		グリッドの描画
