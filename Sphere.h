@@ -16,16 +16,19 @@ private://メンバ関数
 	
 
 public:
-	Sphere(Vector3 center, float radius, uint32_t color) { transform_.translation = center; radius_ = radius; color_ = color; }
+	Sphere(){}
 	virtual ~Sphere() {}
 
 	void Init(Vector3 center, Vector3 rotate, float radius, uint32_t color);
-	void Update();
+	void UpdateImGui(const char* lavel);
 	void Draw(Matrix4x4& viewProjection, Matrix4x4& viewPort);
-
-
-	Vector3 GetCenter()const;
+	
+	///=================================
+	///	アクセッサ
+	///=================================
+	
 	void SetCenter(const Vector3& center);
+	
 
 	Vector3 GetRotate()const;
 	void GetRotate(const Vector3& rotate);
@@ -37,6 +40,8 @@ public:
 	
 	uint32_t GetColor()const;
 	void SetColor(const uint32_t color);
+
+	Vector3 GetCenter()const;
 
 };
 

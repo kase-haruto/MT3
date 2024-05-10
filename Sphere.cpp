@@ -13,13 +13,12 @@ void Sphere::Init(Vector3 center, Vector3 rotate, float radius, uint32_t color) 
 	worldMatrix_ = Matrix4x4::MakeAffineMatrix({ 1.0f,1.0f,1.0f }, transform_.rotation, transform_.translation);
 }
 
-void Sphere::Update() {
-	ImGui::Begin("Sphere");
+void Sphere::UpdateImGui(const char* lavel) {
+	ImGui::Begin(lavel);
 	ImGui::DragFloat3("translate", &transform_.translation.x, 0.01f);
 	ImGui::DragFloat("radius", &radius_, 0.01f);
 	ImGui::End();
 }
-
 
 void Sphere::Draw(Matrix4x4& viewProjection, Matrix4x4& viewport) {
 	// 分割数
@@ -74,7 +73,14 @@ void Sphere::Draw(Matrix4x4& viewProjection, Matrix4x4& viewport) {
 	}
 }
 
-Vector3 Sphere::GetCenter()const { return transform_.translation; }
 void Sphere::SetCenter(const Vector3& center) { transform_.translation = center; }
 
 float Sphere::GetRadius()const { return radius_; }
+
+void Sphere::SetColor(const uint32_t color){ color_ = color; }
+
+Vector3 Sphere::GetCenter()const{
+	Vector3 center;
+	center = transform_.translation;
+	return center;
+}
