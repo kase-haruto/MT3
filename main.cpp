@@ -3,6 +3,7 @@
 #include<imgui.h>
 #include"Sphere.h"
 #include"Grid.h"
+#include"MyFunc.h"
 
 const char kWindowTitle[] = "LE2A_09_カセ_ハルト_";
 
@@ -17,55 +18,6 @@ struct Camera {
 	Matrix4x4 worldViewProjectionMatrix;
 	Matrix4x4 viewportMatrix;
 };
-
-struct Line {
-	Vector3 origin;//始点
-	Vector3 diff;//終点への線分ベクトル
-};
-
-struct Ray {
-	Vector3 origin;
-	Vector3 diff;
-};
-
-struct Segment {
-	Vector3 origin;
-	Vector3 diff;
-};
-
-
-/// <summary>
-/// ベクトルの内積を求めます
-/// </summary>
-/// <param name="v1"></param>
-/// <param name="v2"></param>
-/// <returns>ベクトルの内積</returns>
-float Dot(const Vector3& v1, const Vector3& v2) {
-	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
-}
-
-/// <summary>
-/// 正射影ベクトルを求めます
-/// </summary>
-/// <param name="v1"></param>
-/// <param name="v2"></param>
-/// <returns>計算結果を返します</returns>
-Vector3 Projection(const Vector3& v1, const Vector3& v2) {
-	Vector3 b = Vector3::Normalize(v2);
-	float d = Dot(v1, b);
-	return b * d;
-}
-
-/// <summary>
-/// 最近接点を求めます
-/// </summary>
-/// <param name="point"></param>
-/// <param name="segment"></param>
-/// <returns>最近接点の値を返します</returns>
-Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
-	return segment.origin + Projection((point - segment.origin), segment.diff);
-}
-
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -110,6 +62,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("origin", &segment.origin.x, 0.01f);
 		ImGui::DragFloat3("diff", &segment.diff.x, 0.01f);
 		ImGui::InputFloat3("Project", &project.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
+		ImGui::InputFloat3("closestPoint", &closestPoint.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
 		ImGui::End();
 
 		ImGui::Begin("camera");
