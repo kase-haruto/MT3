@@ -14,20 +14,32 @@
     <Filter Include="KamataEngine\Adapter">
       <UniqueIdentifier>{c6468eb4-788b-4a83-b207-a5f4804e56c5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Sshapes">
-      <UniqueIdentifier>{a74cc948-414c-4d01-a285-664d96f9f4a4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Sshapes\Sphere">
-      <UniqueIdentifier>{0ce7ec7d-451a-44e8-9ebb-3bef0e861611}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Transform">
       <UniqueIdentifier>{1877878c-3ad0-46d3-b4e6-dd5edffb49fe}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Grid">
-      <UniqueIdentifier>{47515990-b4bd-4f15-b26c-fa4109a82111}</UniqueIdentifier>
-    </Filter>
     <Filter Include="MyFunc">
       <UniqueIdentifier>{81539f71-dd96-47df-942f-ce5d2164b766}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object">
+      <UniqueIdentifier>{26cfde23-f1ab-4dd9-8808-0a443c95fc6b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object\Grid">
+      <UniqueIdentifier>{47515990-b4bd-4f15-b26c-fa4109a82111}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyStruct">
+      <UniqueIdentifier>{aaa4cba9-a8a3-4ad5-b3a2-b2080b294026}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyCamera">
+      <UniqueIdentifier>{0817871b-aadb-46f3-bd09-aadd6659dfda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object\Shapes">
+      <UniqueIdentifier>{a74cc948-414c-4d01-a285-664d96f9f4a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object\Shapes\Sphere">
+      <UniqueIdentifier>{0ce7ec7d-451a-44e8-9ebb-3bef0e861611}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object\Shapes\Plane">
+      <UniqueIdentifier>{bff15adb-3bc0-49ca-96d0-911f83aea647}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -57,13 +69,19 @@
       <Filter>KamataEngine\Source</Filter>
     </ClCompile>
     <ClCompile Include="Sphere.cpp">
-      <Filter>Sshapes\Sphere</Filter>
+      <Filter>Object\Shapes\Sphere</Filter>
     </ClCompile>
     <ClCompile Include="Grid.cpp">
-      <Filter>Grid</Filter>
+      <Filter>Object\Grid</Filter>
     </ClCompile>
     <ClCompile Include="C:\KamataEngine\DirectXGame\2d\ImGuiManager.cpp">
       <Filter>KamataEngine\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>MyCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="Plane.cpp">
+      <Filter>Object\Shapes\Plane</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -131,13 +149,13 @@
       <Filter>KamataEngine\Include</Filter>
     </ClInclude>
     <ClInclude Include="Sphere.h">
-      <Filter>Sshapes\Sphere</Filter>
+      <Filter>Object\Shapes\Sphere</Filter>
     </ClInclude>
     <ClInclude Include="Transform.h">
       <Filter>Transform</Filter>
     </ClInclude>
     <ClInclude Include="Grid.h">
-      <Filter>Grid</Filter>
+      <Filter>Object\Grid</Filter>
     </ClInclude>
     <ClInclude Include="C:\KamataEngine\DirectXGame\math\Matrix4x4.h">
       <Filter>KamataEngine\Include</Filter>
@@ -157,6 +175,14 @@
     <ClInclude Include="MyFunc.h">
       <Filter>MyFunc</Filter>
     </ClInclude>
-    <ClInclude Include="MyStruct.h" />
+    <ClInclude Include="MyStruct.h">
+      <Filter>MyStruct</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>MyCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="Plane.h">
+      <Filter>Object\Shapes\Plane</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

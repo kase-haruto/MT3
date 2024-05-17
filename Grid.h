@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include"Matrix4x4.h"
+#include"Camera.h"
 struct Grid {
 	
 	/// <summary>
@@ -16,6 +17,6 @@ struct Grid {
 	/// </summary>
 	/// <param name="viewProjectionMatrix"></param>
 	/// <param name="viewportMatrix"></param>
-	static void Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
+	static void Draw(const Camera* cam);
 };
 

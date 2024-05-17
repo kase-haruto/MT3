@@ -8,6 +8,20 @@ float cot(float angle) {
 	return 1 / std::tan(angle);
 }
 
+Matrix4x4 Matrix4x4::MakeIdentity(){
+	Matrix4x4 result;
+	for (int i = 0; i < 4; ++i){
+		for (int j = 0; j < 4; ++j){
+			if (i == j){
+				result.m[i][j] = 1.0f; // 対角成分は1
+			} else{
+				result.m[i][j] = 0.0f; // 対角以外の成分は0
+			}
+		}
+	}
+	return result;
+}
+
 //平行移動行列
 Matrix4x4 Matrix4x4::MakeTranslateMatrix(const Vector3& translate) {
 	Matrix4x4 result = {
@@ -77,36 +91,6 @@ Matrix4x4 Matrix4x4::MakeAffineMatrix(const Vector3& scale, const Vector3& rotat
 	return affineMatrix;
 }
 
-//Matrix4x4 Matrix4x4::Inverse(const Matrix4x4& m) {
-//	Matrix4x4 result;
-//
-//	// 行列Aを複製する
-//	Matrix4x4 temp = m;
-//
-//	// ガウス・ジョルダン法を用いて逆行列を計算
-//	for (int i = 0; i < 4; ++i) {
-//		// 対角要素を1にする
-//		float divisor = temp.m[i][i];
-//		for (int j = 0; j < 4; ++j) {
-//			temp.m[i][j] /= divisor;
-//			result.m[i][j] /= divisor;
-//		}
-//
-//		// 対角要素以外を0にする
-//		for (int k = 0; k < 4; ++k) {
-//			if (k != i) {
-//				float multiplier = temp.m[k][i];
-//				for (int j = 0; j < 4; ++j) {
-//					temp.m[k][j] -= temp.m[i][j] * multiplier;
-//					result.m[k][j] -= result.m[i][j] * multiplier;
-//				}
-//			}
-//		}
-//	}
-//
-//	return result;
-//}
-
 Matrix4x4 Matrix4x4::Inverse(const Matrix4x4& m) {
 	Matrix4x4 invMatrix;
 
@@ -144,7 +128,6 @@ Matrix4x4 Matrix4x4::Inverse(const Matrix4x4& m) {
 	return invMatrix;
 }
 
-
 //座標系変換
 Vector3 Matrix4x4::Transform(const Vector3& vector, const Matrix4x4& matrix) {
 	Vector3 result = { 0, 0, 0 };
@@ -171,8 +154,6 @@ Vector3 Matrix4x4::Transform(const Vector3& vector, const Matrix4x4& matrix) {
 
 	return result;
 }
-
-
 
 Matrix4x4 Matrix4x4::Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 	Matrix4x4 result;
@@ -224,7 +205,6 @@ Matrix4x4 Matrix4x4::MakeViewportMatrix(float l, float t, float w, float h, floa
 	};
 	return result;
 }
-
 
 void Matrix4x4::MatrixScreenPrint(int x, int y, const Matrix4x4& matrix, const char* str) {
 	const int kRowHeight = 20;

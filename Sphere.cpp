@@ -20,7 +20,7 @@ void Sphere::UpdateImGui(const char* lavel) {
 	ImGui::End();
 }
 
-void Sphere::Draw(Matrix4x4& viewProjection, Matrix4x4& viewport) {
+void Sphere::Draw(Camera* cam) {
 	// 分割数
 	const uint32_t kSubdivision = 16; // 任意の適切な値を設定
 	// 軽度分割1つ分の角度
@@ -58,13 +58,13 @@ void Sphere::Draw(Matrix4x4& viewProjection, Matrix4x4& viewport) {
 			c.z = radius_ * (std::cos(lat) * std::sin(lon + kLonEvery)) + transform_.translation.z;
 
 			//スクリーン座標まで変換させる
-			ndcPosA = Matrix4x4::Transform(a, viewProjection);
-			ndcPosB = Matrix4x4::Transform(b, viewProjection);
-			ndcPosC = Matrix4x4::Transform(c, viewProjection);
+			ndcPosA = Matrix4x4::Transform(a,cam->GetViewProjection());
+			ndcPosB = Matrix4x4::Transform(b,cam->GetViewProjection());
+			ndcPosC = Matrix4x4::Transform(c,cam->GetViewProjection());
 
-			screenPosA = Matrix4x4::Transform(ndcPosA, viewport);
-			screenPosB = Matrix4x4::Transform(ndcPosB, viewport);
-			screenPosC = Matrix4x4::Transform(ndcPosC, viewport);
+			screenPosA = Matrix4x4::Transform(ndcPosA, cam->GetViewPort());
+			screenPosB = Matrix4x4::Transform(ndcPosB, cam->GetViewPort());
+			screenPosC = Matrix4x4::Transform(ndcPosC, cam->GetViewPort());
 
 			//ab,bcで線を引く
 			Novice::DrawLine(int(screenPosA.x), int(screenPosA.y), int(screenPosB.x), int(screenPosB.y), color_);

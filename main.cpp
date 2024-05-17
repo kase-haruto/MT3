@@ -5,20 +5,9 @@
 #include"Grid.h"
 #include"MyFunc.h"
 #include<memory>
+#include"Camera.h"
 
 const char kWindowTitle[] = "LE2A_09_カセ_ハルト_";
-
-
-struct Camera{
-	Vector3 translate;
-	Vector3 rotate;
-	Vector3 direction;
-	Matrix4x4 cameraMatrix;
-	Matrix4x4 viewMatrix;
-	Matrix4x4 projectionMatrix;
-	Matrix4x4 worldViewProjectionMatrix;
-	Matrix4x4 viewportMatrix;
-};
 
 bool IsCollision(const Sphere* s1, const Sphere* s2){
 	float distance = Vector3::Length(s1->GetCenter() - s2->GetCenter());
@@ -38,11 +27,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	char keys[256] = {0};
 	char preKeys[256] = {0};
 
-	Camera cam;
-	cam.translate = {0.0f,1.9f,-6.49f};
-	cam.rotate = {0.26f,0.0f,0.0f};
-	cam.projectionMatrix = Matrix4x4::MakePerspectiveFovMatrix(0.45f, 1280.0f / 720.0f, 0.1f, 100.0f);
-	cam.viewportMatrix = Matrix4x4::MakeViewportMatrix(0, 0, 1280.0f, 720.0f, 0.0f, 1.0f);
+	std::unique_ptr<Camera> camera = std::make_unique<Camera>();
 
 	Vector3 s1Center = {0.0f,0.0f,0.0f};
 	Vector3 s2Center = {1.0f,0.0f,1.0f};
@@ -68,14 +53,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//================================================================================================
 		//		カメラの行列の計算
 		//================================================================================================
-		ImGui::Begin("camera");
+		/*ImGui::Begin("camera");
 		ImGui::DragFloat3("transtation", &cam.translate.x, 0.01f);
 		ImGui::DragFloat3("rotation", &cam.rotate.x, 0.01f);
-		ImGui::End();
+		ImGui::End();*/
 
-		cam.cameraMatrix = Matrix4x4::MakeAffineMatrix({1.0f,1.0f,1.0f}, cam.rotate, cam.translate);
-		cam.viewMatrix = Matrix4x4::Inverse(cam.cameraMatrix);
-		Matrix4x4 viewProjectionMatrix = Matrix4x4::Multiply(cam.viewMatrix, cam.projectionMatrix);
+		camera->Update();
 
 
 		//================================================================================================
@@ -94,14 +77,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//================================================================================================
 		//		グリッドの描画
 		//================================================================================================
-		Grid::Draw(viewProjectionMatrix, cam.viewportMatrix);
+		Grid::Draw(camera.get());
 
 
 		//================================================================================================
 		//		球の描画
 		//================================================================================================
-		sphere1->Draw(viewProjectionMatrix, cam.viewportMatrix);
-		sphere2->Draw(viewProjectionMatrix, cam.viewportMatrix);
+		sphere1->Draw(camera.get());
+		sphere2->Draw(camera.get());
 
 		// フレームの終了
 		Novice::EndFrame();

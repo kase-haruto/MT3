@@ -3,6 +3,7 @@
 #include"Matrix4x4.h"
 #include"Transform.h"
 #include<stdint.h>
+#include"Camera.h"
 
 class Sphere {
 
@@ -21,7 +22,7 @@ public:
 
 	void Init(Vector3 center, Vector3 rotate, float radius, uint32_t color);
 	void UpdateImGui(const char* lavel);
-	void Draw(Matrix4x4& viewProjection, Matrix4x4& viewPort);
+	void Draw(Camera* cam);
 	
 	///=================================
 	///	アクセッサ
