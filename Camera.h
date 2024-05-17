@@ -42,7 +42,6 @@ private:
 	Matrix4x4 MakeViewportMatrix(float l, float t, float w, float h, float minDepth, float maxDepth);
 
 	
-	
 	// コピー禁止
 	Camera(const Camera&) = delete;
 	Camera& operator=(const Camera&) = delete;

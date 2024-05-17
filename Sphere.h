@@ -22,7 +22,7 @@ public:
 
 	void Init(Vector3 center, Vector3 rotate, float radius, uint32_t color);
 	void UpdateImGui(const char* lavel);
-	void Draw(Camera* cam);
+	void Draw(const Camera* cam);
 	
 	///=================================
 	///	アクセッサ

@@ -20,7 +20,7 @@ void Sphere::UpdateImGui(const char* lavel) {
 	ImGui::End();
 }
 
-void Sphere::Draw(Camera* cam) {
+void Sphere::Draw(const Camera* cam) {
 	// 分割数
 	const uint32_t kSubdivision = 16; // 任意の適切な値を設定
 	// 軽度分割1つ分の角度

@@ -27,7 +27,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	char keys[256] = {0};
 	char preKeys[256] = {0};
 
-	std::unique_ptr<Camera> camera = std::make_unique<Camera>();
+	Camera* camera = Camera::GetInstance();
+	camera->Initialize();
 
 	Vector3 s1Center = {0.0f,0.0f,0.0f};
 	Vector3 s2Center = {1.0f,0.0f,1.0f};
@@ -77,14 +78,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//================================================================================================
 		//		グリッドの描画
 		//================================================================================================
-		Grid::Draw(camera.get());
+		Grid::Draw(camera);
 
 
 		//================================================================================================
 		//		球の描画
 		//================================================================================================
-		sphere1->Draw(camera.get());
-		sphere2->Draw(camera.get());
+		sphere1->Draw(camera);
+		sphere2->Draw(camera);
 
 		// フレームの終了
 		Novice::EndFrame();
