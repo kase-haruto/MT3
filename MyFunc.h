@@ -39,10 +39,10 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment){
 /// <param name="v"></param>
 /// <returns>垂直ベクトル</returns>
 Vector3 Perpendicular(const Vector3& v){
-	if (v.x!= 0.0f||v.y!= 0.0f){
-		return{-v.y,v.x,0.0f};
+	if (v.x != 0.0f || v.y != 0.0f){
+		return {-v.y, v.x, 0.0f};
 	}
-	return {0.0f,-v.z,v.y};
+	return {0.0f, -v.z, v.y};
 }
 
 /// <summary>

@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include<cmath>
+#include"imgui.h"
 
 Camera* Camera::GetInstance(){
 	static Camera instance;
@@ -22,6 +23,11 @@ void Camera::Initialize(){
 
 
 void Camera::Update(){
+	ImGui::Begin("camera");
+	ImGui::DragFloat3("translate", &translate_.x, 0.01f);
+	ImGui::DragFloat3("rotate", &rotate_.x, 0.01f);
+	ImGui::End();
+
 	cameraMatrix_ = Matrix4x4::MakeAffineMatrix({1.0f,1.0f,1.0f}, rotate_, translate_);
 	matView_ = Matrix4x4::Inverse(cameraMatrix_);
 	matViewProjection_ = Matrix4x4::Multiply(matView_, matProjection_);
