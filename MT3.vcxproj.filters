@@ -41,6 +41,9 @@
     <Filter Include="Object\Shapes\Plane">
       <UniqueIdentifier>{bff15adb-3bc0-49ca-96d0-911f83aea647}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Collision">
+      <UniqueIdentifier>{adb8b6e3-49db-46ee-beac-875529a30cf4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C:\KamataEngine\DirectXGame\base\DirectXCommon.cpp">
@@ -82,6 +85,12 @@
     </ClCompile>
     <ClCompile Include="Plane.cpp">
       <Filter>Object\Shapes\Plane</Filter>
+    </ClCompile>
+    <ClCompile Include="MyFunc.cpp">
+      <Filter>MyFunc</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision.cpp">
+      <Filter>Collision</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -183,6 +192,9 @@
     </ClInclude>
     <ClInclude Include="Plane.h">
       <Filter>Object\Shapes\Plane</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision.h">
+      <Filter>Collision</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

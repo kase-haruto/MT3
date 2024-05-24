@@ -126,9 +126,6 @@ Vector3 Vector3::operator-(const float& scalar) const {
 	return Vector3(newX, newY, newZ);
 }
 
-Vector3 Vector3::operator-()const{
-	return Vector3(-x, -y, -z);
-}
 
 Vector3 Vector3::operator-=(const float& scalar) {
 	x -= scalar;

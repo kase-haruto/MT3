@@ -2,15 +2,15 @@
 #include"Vector3.h"
 #include"Transform.h"
 #include"Camera.h"
+#include<stdint.h>
 
 /// <summary>
 /// 平面
 /// </summary>
 class Plane{
 private:
-	Transform wTransform_;
-	Vector3 normal_ {1.0f,1.0f,1.0f};
-	float distance_;
+	Vector3 normal_;//法線
+	float distance_;//距離
 
 	
 public:
@@ -27,10 +27,13 @@ public:
 	/// <summary>
 	/// 更新
 	/// </summary>
-	void Update();
+	void UpdateImGui();
 	/// <summary>
 	/// 描画
 	/// </summary>
-	void Draw(const Camera* camera);
+	void Draw(const Camera* camera, uint32_t color);
+
+	const Vector3 GetNormal()const{ return normal_; }
+	const float GetDistance()const{ return distance_; }
 };
 
