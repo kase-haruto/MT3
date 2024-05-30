@@ -44,6 +44,9 @@
     <Filter Include="Collision">
       <UniqueIdentifier>{adb8b6e3-49db-46ee-beac-875529a30cf4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Object\Shapes\Triangle">
+      <UniqueIdentifier>{1b9f04b5-0acf-46cd-8d89-1c0ed0333691}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C:\KamataEngine\DirectXGame\base\DirectXCommon.cpp">
@@ -91,6 +94,9 @@
     </ClCompile>
     <ClCompile Include="Collision.cpp">
       <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Triangle.cpp">
+      <Filter>Object\Shapes\Triangle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +201,9 @@
     </ClInclude>
     <ClInclude Include="Collision.h">
       <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Triangle.h">
+      <Filter>Object\Shapes\Triangle</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
