@@ -66,7 +66,7 @@ bool IsCollision(const Segment& segment, const Triangle* triangle){
     }
 
     // 衝突点を計算
-    Vector3 collisionPoint = segment.origin + t * segment.diff;
+    Vector3 collisionPoint = segment.origin + segment.diff* t;
 
     // 三角形の各辺と衝突点を結んだベクトルのクロス積を計算
     Vector3 cross0 = Cross(v1 - v0, collisionPoint - v0);
@@ -81,3 +81,11 @@ bool IsCollision(const Segment& segment, const Triangle* triangle){
     return false;
 }
 
+bool isCollision(const AABB* aabb1, const AABB* aabb2){
+	if ((aabb1->GetMin().x <= aabb2->GetMax().x && aabb1->GetMax().x >= aabb2->GetMin().x)&&
+		(aabb1->GetMin().y <= aabb2->GetMax().y && aabb1->GetMax().y >= aabb2->GetMin().y)&&
+		(aabb1->GetMin().z <= aabb2->GetMax().z && aabb1->GetMax().z >= aabb2->GetMin().z)){
+		return true;
+	}
+	return false;
+}

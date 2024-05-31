@@ -10,7 +10,7 @@
 #include"MyFunc.h"
 #include"Collision.h"
 #include"MyStruct.h"
-#include"Triangle.h"
+#include"AABB.h"
 const char kWindowTitle[] = "LE2A_09_カセ_ハルト_";
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -26,12 +26,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	Camera* camera = Camera::GetInstance();
 	camera->Initialize();
 
-	std::unique_ptr<Triangle>triangle = std::make_unique<Triangle>();
-	triangle->Initialize();
+	std::unique_ptr<AABB> aabb1 = std::make_unique<AABB>();
+	aabb1->Initialize({-0.5f,-0.5f,-0.5f} ,{0.0f,0.0f,0.0f},WHITE);
 
-	Segment segment({-0.5f,0.0f,0.0f}, {0.5f,0.5f,0.0f},WHITE);
-	Vector3 segmentEnd;
-
+	std::unique_ptr<AABB> aabb2 = std::make_unique<AABB>();
+	aabb2->Initialize({0.2f,0.2f,0.2f}, {1.0f,1.0f,1.0f}, WHITE);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0){
@@ -45,31 +44,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//================================================================================================
 		//		imguiの更新
 		//================================================================================================
-		ImGui::Begin("segment");
-		ImGui::DragFloat3("origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("diff", &segment.diff.x, 0.01f);
-		ImGui::End();
-
+		aabb1->UpdateUI("aabb1");
+		aabb2->UpdateUI("aabb2");
 		//================================================================================================
 		//		カメラの行列の計算
 		//================================================================================================
 		camera->Update();
-		
-		//================================================================================================
-		//		線分の計算
-		//================================================================================================
-		segmentEnd = segment.diff + segment.origin;
 
-		triangle->UiUpdate();
+		//================================================================================================
+		//		aabbの更新
+		//================================================================================================
+		aabb1->Update();
+		aabb2->Update();
 
 		//================================================================================================
 		//		衝突判定
 		//================================================================================================
-		segment.color = WHITE;
-		if (IsCollision(segment,triangle.get())){
-			segment.color = RED;
+		aabb1->SetColor(WHITE);
+		aabb2->SetColor(WHITE);
+		if (isCollision(aabb1.get(), aabb2.get())){
+			aabb1->SetColor(RED);
+			aabb2->SetColor(RED);
 		}
-
 
 		//================================================================================================
 		//		グリッドの描画
@@ -77,21 +73,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		Grid::Draw(camera);
 
 		//================================================================================================
-		//		三角形の描画
+		//		aabbの描画
 		//================================================================================================
-		triangle->Draw(camera);
-
-		//================================================================================================
-		//		線分の描画
-		//================================================================================================
-		Vector3 ndcStartPos = Matrix4x4::Transform(segment.origin, camera->GetViewProjection());
-		Vector3 ndcEndPos = Matrix4x4::Transform(segmentEnd, camera->GetViewProjection());
-		Vector3 screenStartPos = Matrix4x4::Transform(ndcStartPos, camera->GetViewPort());
-		Vector3 screenEndPos = Matrix4x4::Transform(ndcEndPos, camera->GetViewPort());
-		Novice::DrawLine(static_cast< int >(screenStartPos.x), static_cast< int >(screenStartPos.y),
-						 static_cast< int >(screenEndPos.x), static_cast< int >(screenEndPos.y),
-						 segment.color);
-
+		aabb1->Draw(camera);
+		aabb2->Draw(camera);
+		
 		// フレームの終了
 		Novice::EndFrame();
 
