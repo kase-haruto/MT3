@@ -30,8 +30,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	std::unique_ptr<AABB> aabb1 = std::make_unique<AABB>();
 	aabb1->Initialize({0.2f,0.2f,0.2f}, {1.0f,1.0f,1.0f},WHITE);
 
-	std::unique_ptr<Sphere> sphere = std::make_unique<Sphere>();
-	sphere->Init({0.0f,0.0f,0.0f}, {0.0f,0.0f,0.0f}, 0.5f, WHITE);
+	Segment segment;
+
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0){
@@ -46,7 +46,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//		imguiの更新
 		//================================================================================================
 		aabb1->UpdateUI("aabb1");
-		sphere->UpdateImGui("sphere");
 
 		//================================================================================================
 		//		カメラの行列の計算
@@ -63,11 +62,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//		衝突判定
 		//================================================================================================
 		aabb1->SetColor(WHITE);
-		sphere->SetColor(WHITE);
-		if (isCollision(sphere.get(),aabb1.get())){
-			aabb1->SetColor(RED);
-			sphere->SetColor(RED);
-		}
+		
 		//================================================================================================
 		//		グリッドの描画
 		//================================================================================================
@@ -76,7 +71,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//================================================================================================
 		//		球体の描画
 		//================================================================================================
-		sphere->Draw(camera);
 
 
 		//================================================================================================
