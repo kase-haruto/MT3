@@ -1,6 +1,7 @@
 ﻿#include "Collision.h"
 #include"MyFunc.h"
-
+#include<cmath>
+#include<algorithm>
 bool IsCollision(const Sphere* s, const Plane* plane){
 	Vector3 spherePos = s->GetCenter();
 	float sphereRadius = s->GetRadius();
@@ -88,4 +89,21 @@ bool isCollision(const AABB* aabb1, const AABB* aabb2){
 		return true;
 	}
 	return false;
+}
+
+bool isCollision(const Sphere* s, const AABB* aabb){
+	Vector3 closestPoint {
+		std::clamp(s->GetCenter().x,aabb->GetMin().x,aabb->GetMax().x),
+		std::clamp(s->GetCenter().y,aabb->GetMin().y,aabb->GetMax().y),
+		std::clamp(s->GetCenter().z,aabb->GetMin().z,aabb->GetMax().z),
+	};
+
+	//距離を求める
+	float distance = Vector3::Length(closestPoint - s->GetCenter());
+
+	if (distance<=s->GetRadius()){
+		return true;
+	}
+	return false;
+
 }
