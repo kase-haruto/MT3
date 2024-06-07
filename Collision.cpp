@@ -2,6 +2,7 @@
 #include"MyFunc.h"
 #include<cmath>
 #include<algorithm>
+
 bool IsCollision(const Sphere* s, const Plane* plane){
 	Vector3 spherePos = s->GetCenter();
 	float sphereRadius = s->GetRadius();
@@ -107,3 +108,19 @@ bool isCollision(const Sphere* s, const AABB* aabb){
 	return false;
 
 }
+
+bool isCollision(const Segment& segment, const AABB* aabb){
+	Vector3 invDir = Vector3(1.0f / segment.diff.x, 1.0f / segment.diff.y, 1.0f / segment.diff.z);
+
+	Vector3 t1 = (aabb->GetMin() - segment.origin) * invDir;
+	Vector3 t2 = (aabb->GetMax() - segment.origin) * invDir;
+
+	Vector3 tNear = Vector3::Min(t1, t2);
+	Vector3 tFar = Vector3::Max(t1, t2);
+
+	float tMinF = std::max(std::max(tNear.x, tNear.y), tNear.z);
+	float tMaxF = std::min(std::min(tFar.x, tFar.y), tFar.z);
+
+	return tMaxF >= tMinF && tMaxF >= 0.0f && tMinF <= 1.0f;
+}
+

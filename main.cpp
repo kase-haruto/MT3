@@ -30,8 +30,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	std::unique_ptr<AABB> aabb1 = std::make_unique<AABB>();
 	aabb1->Initialize({0.2f,0.2f,0.2f}, {1.0f,1.0f,1.0f},WHITE);
 
-	Segment segment;
+	Segment segment({-0.5f,0.0f,0.0f}, {0.5f,0.5f,0.0f}, WHITE);
+	Vector3 segmentEnd;
 
+	//obbと球
+	//sphereとobbどっちにもmInverseをかける
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0){
@@ -46,11 +49,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//		imguiの更新
 		//================================================================================================
 		aabb1->UpdateUI("aabb1");
+		ImGui::Begin("segment");
+		ImGui::DragFloat3("origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("diff", &segment.diff.x, 0.01f);
+		ImGui::End();
 
 		//================================================================================================
 		//		カメラの行列の計算
 		//================================================================================================
 		camera->Update();
+
+		//================================================================================================
+		//		線分の計算
+		//================================================================================================
+		segmentEnd = segment.diff + segment.origin;
 
 		
 		//================================================================================================
@@ -62,6 +74,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//		衝突判定
 		//================================================================================================
 		aabb1->SetColor(WHITE);
+		if (isCollision(segment, aabb1.get())){
+			aabb1->SetColor(RED);
+		}
 		
 		//================================================================================================
 		//		グリッドの描画
@@ -69,8 +84,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		Grid::Draw(camera);
 
 		//================================================================================================
-		//		球体の描画
+		//		線分の描画
 		//================================================================================================
+
+		Vector3 ndcStartPos = Matrix4x4::Transform(segment.origin, camera->GetViewProjection());
+		Vector3 ndcEndPos = Matrix4x4::Transform(segmentEnd, camera->GetViewProjection());
+		Vector3 screenStartPos = Matrix4x4::Transform(ndcStartPos, camera->GetViewPort());
+		Vector3 screenEndPos = Matrix4x4::Transform(ndcEndPos, camera->GetViewPort());
+		Novice::DrawLine(static_cast< int >(screenStartPos.x), static_cast< int >(screenStartPos.y),
+						 static_cast< int >(screenEndPos.x), static_cast< int >(screenEndPos.y),
+						 segment.color);
 
 
 		//================================================================================================
