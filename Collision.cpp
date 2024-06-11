@@ -109,5 +109,19 @@ bool isCollision(const Sphere* s, const AABB* aabb){
 
 }
 
+bool isCollision(const Segment& segment, const AABB* aabb){
+	Vector3 t_min = (aabb->GetMin() - segment.origin) / segment.diff;
+	Vector3 t_max = (aabb->GetMax() - segment.origin) / segment.diff;
 
+	Vector3 tNear = Vector3::Min(t_min, t_max);
+	Vector3 tFar = Vector3::Max(t_min, t_max);
+
+	float tMinF = std::max(std::max(tNear.x, tNear.y), tNear.z);
+	float tMaxF = std::min(std::min(tFar.x, tFar.y), tFar.z);
+
+	if (tMaxF >= 0.0f && tMinF <= 1.0f && tMaxF >= tMinF){
+		return true;
+	}
+	return false;
+}
 
