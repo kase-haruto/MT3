@@ -1,7 +1,7 @@
-#include "Camera.h"
+﻿#include "Camera.h"
 #include<cmath>
 #include"imgui.h"
-
+#include"Input.h"
 Camera* Camera::GetInstance(){
 	static Camera instance;
 	return&instance;
@@ -26,7 +26,44 @@ void Camera::Update(){
 	ImGui::Begin("camera");
 	ImGui::DragFloat3("translate", &translate_.x, 0.01f);
 	ImGui::DragFloat3("rotate", &rotate_.x, 0.01f);
+	ImGui::Text("Move:WASD");
+	ImGui::Text("Up,Down:QE");
+	ImGui::Text("Rotate:IJKL");
 	ImGui::End();
+
+#pragma region キーボード操作
+
+	if (Input::GetInstance()->PushKey(DIK_D)){
+		translate_.x += 0.1f;
+	} else if (Input::GetInstance()->PushKey(DIK_A)){
+		translate_.x -= 0.1f;
+	}
+
+	if (Input::GetInstance()->PushKey(DIK_Q)){
+		translate_.y += 0.1f;
+	} else if (Input::GetInstance()->PushKey(DIK_E)){
+		translate_.y -= 0.1f;
+	}
+
+	if (Input::GetInstance()->PushKey(DIK_W)){
+		translate_.z += 0.1f;
+	} else if (Input::GetInstance()->PushKey(DIK_S)){
+		translate_.z -= 0.1f;
+	}
+
+	if (Input::GetInstance()->PushKey(DIK_K)){
+		rotate_.x += 0.01f;
+	} else if (Input::GetInstance()->PushKey(DIK_I)){
+		rotate_.x -= 0.01f;
+	}
+
+	if (Input::GetInstance()->PushKey(DIK_L)){
+		rotate_.y += 0.01f;
+	} else if (Input::GetInstance()->PushKey(DIK_J)){
+		rotate_.y -= 0.01f;
+	}
+	
+#pragma endregion
 
 	cameraMatrix_ = Matrix4x4::MakeAffineMatrix({1.0f,1.0f,1.0f}, rotate_, translate_);
 	matView_ = Matrix4x4::Inverse(cameraMatrix_);
