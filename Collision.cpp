@@ -125,3 +125,50 @@ bool isCollision(const Segment& segment, const AABB* aabb){
 	return false;
 }
 
+bool IsCollision(const OBB* obb, const Sphere* sphere){
+	// 球の中心
+	Vector3 sphereCenter = sphere->GetCenter();
+
+	// OBBの中心
+	Vector3 obbCenter = obb->GetCenter();
+
+	// 球の中心をOBBのローカル座標系に変換
+	Vector3 localSphereCenter = sphereCenter - obbCenter;
+
+	// 球の中心をOBBの軸に投影
+	Vector3 closestPointInOBB;
+	float distance;
+	Vector3 obbOrientation[3];
+	Vector3 obbSize = obb->GetSize(); // OBBのサイズを取得
+	for (int i = 0; i < 3; ++i){
+		obbOrientation[i] = obb->GetOrientation()[i];
+		distance = Dot(localSphereCenter, obbOrientation[i]);
+		// OBBの各軸方向における最近接点を求める
+		if (i == 0){
+			if (distance > obbSize.x) distance = obbSize.x;
+			if (distance < -obbSize.x) distance = -obbSize.x;
+		} else if (i == 1){
+			if (distance > obbSize.y) distance = obbSize.y;
+			if (distance < -obbSize.y) distance = -obbSize.y;
+		} else if (i == 2){
+			if (distance > obbSize.z) distance = obbSize.z;
+			if (distance < -obbSize.z) distance = -obbSize.z;
+		}
+		closestPointInOBB += distance * obbOrientation[i];
+	}
+	// OBBの最も近い点から球の中心までのベクトル
+	Vector3 vectorFromOBB = localSphereCenter - closestPointInOBB;
+
+	// 距離の平方を計算
+	float distanceSquared = Dot(vectorFromOBB, vectorFromOBB);
+
+	// 球の半径の平方
+	float radiusSquared = sphere->GetRadius() * sphere->GetRadius();
+
+	// 距離の平方が球の半径の平方以下であれば衝突
+	if (distanceSquared <= radiusSquared){
+		return true;
+	}
+	return false;
+}
+
