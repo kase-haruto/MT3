@@ -1,17 +1,18 @@
-#include<Novice.h>
-#include<Matrix4x4.h>
-#include<imgui.h>
 #include"Sphere.h"
 #include"Grid.h"
-#include<memory>
 #include"Camera.h"
-#include"MyFunc.h"
-#include"Plane.h"
 #include"MyFunc.h"
 #include"Collision.h"
 #include"MyStruct.h"
-#include"AABB.h"
-#include"Sphere.h"
+
+#include<memory>
+#include<Matrix4x4.h>
+#include<Novice.h>
+
+#ifdef _DEBUG
+	#include<imgui.h>
+#endif // _DEBUG
+
 const char kWindowTitle[] = "LE2A_09_カセ_ハルト_";
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -27,14 +28,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	Camera* camera = Camera::GetInstance();
 	camera->Initialize();
 
-	std::unique_ptr<AABB> aabb1 = std::make_unique<AABB>();
-	aabb1->Initialize({0.2f,0.2f,0.2f}, {1.0f,1.0f,1.0f},WHITE);
+	std::unique_ptr<Sphere> sphere = std::make_unique<Sphere>();
+	sphere->Init({0.0f,0.0f,0.0f}, {0.0f,0.0f,0.0f}, 0.1f, WHITE);
 
-	Segment segment({-0.5f,0.0f,0.0f}, {0.5f,0.5f,0.0f}, WHITE);
-	Vector3 segmentEnd;
+	Pendulum pendulum;
+	pendulum.anchor = {0.0f,1.0f,0.0f};
+	pendulum.length = 0.8f;
+	pendulum.angle = 0.7f;
+	pendulum.angularVelocity = 0.0f;
+	pendulum.angularAcceleration = -(gravity / pendulum.length) * std::sin(pendulum.angle);
+	sphere->SetCenter(pendulum.TipPosition());
+	
+	bool isMove = false;
 
-	//obbと球
-	//sphereとobbどっちにもmInverseをかける
+	
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0){
@@ -48,10 +55,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//================================================================================================
 		//		imguiの更新
 		//================================================================================================
-		aabb1->UpdateUI("aabb1");
-		ImGui::Begin("segment");
-		ImGui::DragFloat3("origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("diff", &segment.diff.x, 0.01f);
+		ImGui::Begin("pendulum");
+		if (ImGui::Button("start")){ isMove = true; }
 		ImGui::End();
 
 		//================================================================================================
@@ -60,48 +65,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		camera->Update();
 
 		//================================================================================================
-		//		線分の計算
+		//		振り子の計算
 		//================================================================================================
-		segmentEnd = segment.diff + segment.origin;
-
-		
-		//================================================================================================
-		//		aabbの更新
-		//================================================================================================
-		aabb1->Update();
-
-		//================================================================================================
-		//		衝突判定
-		//================================================================================================
-		aabb1->SetColor(WHITE);
-		if (isCollision(segment, aabb1.get())){
-			aabb1->SetColor(RED);
+		if (isMove){
+			pendulum.angularAcceleration = -(gravity / pendulum.length) * std::sin(pendulum.angle);
+			pendulum.angularVelocity += pendulum.angularAcceleration * deltaTime;
+			pendulum.angle += pendulum.angularVelocity * deltaTime;
+			sphere->SetCenter(pendulum.TipPosition());
 		}
 		
+
 		//================================================================================================
 		//		グリッドの描画
 		//================================================================================================
 		Grid::Draw(camera);
 
 		//================================================================================================
-		//		線分の描画
+		//		振り子の描画
 		//================================================================================================
-
-		Vector3 ndcStartPos = Matrix4x4::Transform(segment.origin, camera->GetViewProjection());
-		Vector3 ndcEndPos = Matrix4x4::Transform(segmentEnd, camera->GetViewProjection());
-		Vector3 screenStartPos = Matrix4x4::Transform(ndcStartPos, camera->GetViewPort());
-		Vector3 screenEndPos = Matrix4x4::Transform(ndcEndPos, camera->GetViewPort());
-		Novice::DrawLine(static_cast< int >(screenStartPos.x), static_cast< int >(screenStartPos.y),
-						 static_cast< int >(screenEndPos.x), static_cast< int >(screenEndPos.y),
-						 segment.color);
-
-
-		//================================================================================================
-		//		aabbの描画
-		//================================================================================================
-		aabb1->Draw(camera);
-
 		
+		//スクリーン座標まで変換させる
+		Vector3 anchorNdcPos = Matrix4x4::Transform(pendulum.anchor, camera->GetViewProjection());
+		Vector3 tipNdcPos = Matrix4x4::Transform(sphere->GetCenter(), camera->GetViewProjection());
+		Vector3 anchorScreenPos = Matrix4x4::Transform(anchorNdcPos, camera->GetViewPort());
+		Vector3 tipScreenPos = Matrix4x4::Transform(tipNdcPos, camera->GetViewPort());
+		//ひもの描画
+		Novice::DrawLine(static_cast< int >(anchorScreenPos.x), static_cast< int >(anchorScreenPos.y),
+						 static_cast< int >(tipScreenPos.x), static_cast< int >(tipScreenPos.y),
+						 WHITE);
+
+		sphere->Draw(camera);
+
+
 		// フレームの終了
 		Novice::EndFrame();
 
