@@ -29,7 +29,9 @@ struct Pendulum{
 	float angle;//現在の角度
 	float angularVelocity;//速度
 	float angularAcceleration;//加速度
+	float mass;
 
+	//振り子の先端位置を計算
 	Vector3 TipPosition(){
 		Vector3 pos;
 		pos.x = anchor.x + std::sin(angle) * length;
@@ -37,4 +39,7 @@ struct Pendulum{
 		pos.z = anchor.z;
 		return pos;
 	}
+
+
+
 };

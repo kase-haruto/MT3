@@ -124,3 +124,10 @@ bool isCollision(const Segment& segment, const AABB* aabb){
 	return tMaxF >= tMinF && tMaxF >= 0.0f && tMinF <= 1.0f;
 }
 
+bool IsCollision(const Sphere* s1, const Sphere* s2){
+	float distance = Vector3::Length(s1->GetCenter() - s2->GetCenter());
+	if (distance <= s1->GetRadius() + s2->GetRadius()){
+		return true;
+	}
+	return false;
+}

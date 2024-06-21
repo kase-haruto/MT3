@@ -4,6 +4,7 @@
 #include"Triangle.h"
 #include"MyStruct.h"
 #include"AABB.h"
+
 bool IsCollision(const Sphere* s, const Plane* plane);
 
 bool IsCollision(const Segment& segment, const Plane* plane);
@@ -15,3 +16,5 @@ bool isCollision(const AABB* aabb1, const AABB* aabb2);
 bool isCollision(const Sphere* s, const AABB* aabb);
 
 bool isCollision(const Segment& segment, const AABB* aabb);
+
+bool IsCollision(const Sphere* s1, const Sphere* s2);
