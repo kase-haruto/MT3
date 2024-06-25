@@ -22,7 +22,7 @@ void Sphere::UpdateImGui(const char* lavel) {
 
 void Sphere::Draw(const Camera* cam) {
 	// 分割数
-	const uint32_t kSubdivision = 16; // 任意の適切な値を設定
+	const uint32_t kSubdivision = 8; // 任意の適切な値を設定
 	// 軽度分割1つ分の角度
 	const float kLonEvery = 2 * float(M_PI) / kSubdivision;
 	// 緯度分割1つ分の角度
@@ -71,6 +71,7 @@ void Sphere::Draw(const Camera* cam) {
 			Novice::DrawLine(int(screenPosA.x), int(screenPosA.y), int(screenPosC.x), int(screenPosC.y), color_);
 		}
 	}
+	preCenter_ = GetCenter();
 }
 
 void Sphere::SetCenter(const Vector3& center) { transform_.translation = center; }
@@ -84,3 +85,5 @@ Vector3 Sphere::GetCenter()const{
 	center = transform_.translation;
 	return center;
 }
+
+Vector3 Sphere::GetPreCenter()const{return preCenter_;}
