@@ -30,6 +30,7 @@ public:
 	///=================================
 	
 	void SetCenter(const Vector3& center);
+	void SetPreCenter(const Vector3& pos){ preCenter_ = pos; }
 	Vector3 GetPreCenter()const;
 
 	Vector3 GetRotate()const;
@@ -44,6 +45,7 @@ public:
 	void SetColor(const uint32_t color);
 
 	Vector3 GetCenter()const;
+	
 
 };
 

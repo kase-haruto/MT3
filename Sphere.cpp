@@ -71,7 +71,6 @@ void Sphere::Draw(const Camera* cam) {
 			Novice::DrawLine(int(screenPosA.x), int(screenPosA.y), int(screenPosC.x), int(screenPosC.y), color_);
 		}
 	}
-	preCenter_ = GetCenter();
 }
 
 void Sphere::SetCenter(const Vector3& center) { transform_.translation = center; }

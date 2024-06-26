@@ -124,10 +124,91 @@ bool isCollision(const Segment& segment, const AABB* aabb){
 	return tMaxF >= tMinF && tMaxF >= 0.0f && tMinF <= 1.0f;
 }
 
-bool IsCollision(const Sphere* s1, const Sphere* s2){
+bool IsCollision(Sphere* s1, Sphere* s2){
 	float distance = Vector3::Length(s1->GetCenter() - s2->GetCenter());
 	if (distance <= s1->GetRadius() + s2->GetRadius()){
 		return true;
 	}
 	return false;
+
+
+	//Vector3 s1Pos = s1->GetCenter();
+	//Vector3 s1PrePos = s1->GetPreCenter();
+	//float s1Radius = s1->GetRadius();
+	//Vector3 s2Pos = s2->GetCenter();
+	//Vector3 s2PrePos = s2->GetPreCenter();
+	//float s2Radius = s2->GetRadius();
+
+	//// s1からs2への方向ベクトル（現在の位置）
+	//Vector3 directionS1ToS2 = s2Pos - s1Pos;
+	//// s1の前の位置から現在の位置へのベクトル
+	//Vector3 directionS1 = s1Pos - s1PrePos;
+
+	//// 正規化
+	//Vector3 normalizedDir = Vector3::Normalize(directionS1);
+	//// tの値を求める
+	//float t = Dot(directionS1ToS2, normalizedDir) / Vector3::Length(directionS1);
+	//// tを0~1の範囲に収める
+	//t = std::clamp(t, 0.0f, 1.0f);
+
+	//// 線形補完
+	//Vector3 interpolatedPos = s1PrePos + directionS1 * t;
+
+	//// s2の中心位置との距離を求める
+	//float distance = Vector3::Length(s2Pos - interpolatedPos);
+
+	//return distance < (s1Radius + s2Radius);
+}
+
+float ClosestPointsBetweenLines(
+    const Vector3& p1, const Vector3& q1,
+    const Vector3& p2, const Vector3& q2,
+    Vector3& c1, Vector3& c2){
+    Vector3 d1 = q1 - p1; // 線分1の方向ベクトル
+    Vector3 d2 = q2 - p2; // 線分2の方向ベクトル
+    Vector3 r = p1 - p2;
+    float a = Dot(d1, d1); // d1の長さの2乗
+    float e = Dot(d2, d2); // d2の長さの2乗
+    float f = Dot(d2, r);
+
+    float s, t;
+    if (a <= std::numeric_limits<float>::epsilon() && e <= std::numeric_limits<float>::epsilon()){
+        // 両方の線分が点の場合
+        c1 = p1;
+        c2 = p2;
+        return (c1 - c2).LengthSquared();
+    }
+    if (a <= std::numeric_limits<float>::epsilon()){
+        // 線分1が点の場合
+        s = 0.0f;
+        t = f / e;
+        t = std::clamp(t, 0.0f, 1.0f);
+    } else{
+        float c = Dot(d1, r);
+        if (e <= std::numeric_limits<float>::epsilon()){
+            // 線分2が点の場合
+            t = 0.0f;
+            s = std::clamp(-c / a, 0.0f, 1.0f);
+        } else{
+            float b = Dot(d1, d2);
+            float denom = a * e - b * b;
+            if (denom != 0.0f){
+                s = std::clamp((b * f - c * e) / denom, 0.0f, 1.0f);
+            } else{
+                s = 0.0f;
+            }
+            t = (b * s + f) / e;
+            if (t < 0.0f){
+                t = 0.0f;
+                s = std::clamp(-c / a, 0.0f, 1.0f);
+            } else if (t > 1.0f){
+                t = 1.0f;
+                s = std::clamp((b - c) / a, 0.0f, 1.0f);
+            }
+        }
+    }
+
+    c1 = p1 + d1 * s;
+    c2 = p2 + d2 * t;
+    return (c1 - c2).LengthSquared();
 }

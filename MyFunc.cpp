@@ -1,5 +1,5 @@
 ﻿#include"MyFunc.h"
-
+#include<algorithm>
 /// <summary>
 /// ベクトルの内積を求めます
 /// </summary>
@@ -55,3 +55,4 @@ Vector3 Cross(const Vector3& v1, const Vector3& v2){
 	result.z = v1.x * v2.y - v1.y * v2.x;
 	return result;
 }
+

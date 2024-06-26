@@ -17,4 +17,8 @@ bool isCollision(const Sphere* s, const AABB* aabb);
 
 bool isCollision(const Segment& segment, const AABB* aabb);
 
-bool IsCollision(const Sphere* s1, const Sphere* s2);
+bool IsCollision(Sphere* s1,Sphere* s2);
+
+float ClosestPointsBetweenLines(const Vector3& p1, const Vector3& q1,
+                                const Vector3& p2, const Vector3& q2,
+                                Vector3& c1, Vector3& c2);

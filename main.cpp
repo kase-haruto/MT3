@@ -5,8 +5,6 @@
 #include "Collision.h"
 #include "MyStruct.h"
 
-
-
 #include <memory>
 #include <Matrix4x4.h>
 #include <Novice.h>
@@ -34,25 +32,36 @@ float Momentum(Pendulum& pen){
 void AddPendulums(std::vector<Pendulum>& pendulums, std::vector<std::unique_ptr<Sphere>>& tips){
 	// 新しい振り子を作成して初期化
 	Pendulum newPendulum;
-	newPendulum.anchor = {-0.6f + ( int ) pendulums.size() * 0.21f, 1.0f, 0.0f};
+	float radius = tips[0]->GetRadius();
+	newPendulum.anchor = {-0.7f + static_cast< int >(pendulums.size()) * (radius * 2.01f), 1.0f, 0.0f}; // アンカーの位置を調整
 	newPendulum.length = 0.8f;
 	newPendulum.angle = 0.0f;
 	newPendulum.angularVelocity = 0.0f;
 	newPendulum.angularAcceleration = 0.0f;
-	newPendulum.mass = 1.0f;
+	newPendulum.mass = 2.0f;
 
 	pendulums.push_back(newPendulum);
 
 	// 新しい振り子の先端の球体を作成して初期化
 	auto tip = std::make_unique<Sphere>();
-	tip->Init(newPendulum.TipPosition(), {0.0f, 0.0f, 0.0f}, 0.1f, WHITE);
+	tip->Init(newPendulum.TipPosition(), {0.0f, 0.0f, 0.0f}, 0.1f, 0xFFFFFFff); // WHITE
 	tips.push_back(std::move(tip));
 }
 
-void Stop(std::vector<Pendulum>& pendulums,bool& isMove){
+void Stop(std::vector<Pendulum>& pendulums, bool& isMove){
 	for (size_t i = 0; i < pendulums.size(); i++){
 		pendulums[i].angularVelocity = 0.0f;
 		pendulums[i].angle = 0.0f;
+		pendulums[i].length = 0.8f;
+	}
+	isMove = false;
+}
+
+void Reset(std::vector<Pendulum>& pendulums, bool& isMove){
+	for (size_t i = 0; i < pendulums.size(); i++){
+		pendulums[i].angularVelocity = 0.0f;
+		pendulums[i].angle = 0.0f;
+		pendulums[i].length = 0.8f;
 	}
 	isMove = false;
 }
@@ -77,12 +86,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	std::vector<std::unique_ptr<Sphere>>tips;
 	//振り子の数 = 5個
 	Pendulum pen;
-	pen.anchor = {-0.6f,1.0f,0.0f};
+	pen.anchor = {-0.7f,1.0f,0.0f};
 	pen.length = 0.8f;
 	pen.angle = 0.0f;
 	pen.angularVelocity = 0.0f;
 	pen.angularAcceleration = 0.0f;
-	pen.mass = 1.0f;
+	pen.mass = 2.0f;
 	pendulums.push_back(pen);
 	//振り子の先端の球体
 	auto tip = std::make_unique<Sphere>();
@@ -94,8 +103,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	bool isMove = false;
 	//bool isHit = false;
 
-	
-
+	float airResistanceCoefficient = 0.1f;
+	float subSteps = 5;
+	float subDeltaTime = deltaTime / subSteps;
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0){
 		// フレームの開始
@@ -108,25 +118,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//================================================================================================
 		//		imguiの更新
 		//================================================================================================
-		
+
 	#ifdef _DEBUG
-		ImGui::Begin("setting");
+		ImGui::Begin("pendulums");
 		if (ImGui::Button("start")){ isMove = true; }
-		if ((ImGui::Button("stop"))){ Stop(pendulums, isMove); }
+		ImGui::SameLine();
+		if (ImGui::Button("stop")){ isMove = false; }
+		ImGui::SameLine();
+		if (ImGui::Button("reset")){ Reset(pendulums, isMove); }
+		ImGui::SameLine();
+		if (ImGui::Button("addPendulum")){ AddPendulums(pendulums, tips); }
+
 		for (size_t i = 0; i < pendulums.size(); ++i){
 			std::string label = "Pendulum " + std::to_string(i);
 			if (ImGui::TreeNode(label.c_str())){
 				ImGui::DragFloat("Angle", &pendulums[i].angle, 0.01f);
 				ImGui::DragFloat("Length", &pendulums[i].length, 0.01f);
-				ImGui::DragFloat("Mass", &pendulums[i].mass, 0.01f);
+				ImGui::SliderFloat("Mass", &pendulums[i].mass, 0.0f, 10.0f);
+				ImGui::Text("velocity:%.1f", pendulums[i].angularVelocity);
 				ImGui::TreePop();
 			}
 		}
-		if (ImGui::Button("addPendulum")){ AddPendulums(pendulums, tips); }
 		ImGui::End();
 	#endif // _DEBUG
 
-		
+
 
 		//================================================================================================
 		//		カメラの行列の計算
@@ -134,41 +150,56 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		camera->Update();
 
 		//================================================================================================
-		//		振り子の計算
+		// 振り子の計算
 		//================================================================================================
-		for (size_t i = 0; i < pendulums.size(); ++i){
-			if (isMove){
-				pendulums[i].angularAcceleration = -(gravity / pendulums[i].length) * std::sin(pendulums[i].angle);
-				pendulums[i].angularVelocity += pendulums[i].angularAcceleration * deltaTime;
-				pendulums[i].angle += pendulums[i].angularVelocity * deltaTime;
+		 // メインループ内での計算
+		for (int step = 0; step < subSteps; ++step){
+			// 振り子の計算
+			for (size_t i = 0; i < pendulums.size(); ++i){
+				tips[i]->SetPreCenter(pendulums[i].TipPosition());
+				if (isMove){
+					// 重力加速度と空気抵抗の計算
+					float gravity_acceleration = -(gravity / pendulums[i].length) * std::sin(pendulums[i].angle);
+					float air_resistance = -airResistanceCoefficient * pendulums[i].angularVelocity;
+
+					// 角加速度の更新
+					pendulums[i].angularAcceleration = gravity_acceleration + air_resistance;
+					// 角速度の更新
+					pendulums[i].angularVelocity += pendulums[i].angularAcceleration * subDeltaTime;
+					// 角度の更新
+					pendulums[i].angle += pendulums[i].angularVelocity * subDeltaTime;
+				}
+				tips[i]->SetCenter(pendulums[i].TipPosition());
 			}
-			tips[i]->SetCenter(pendulums[i].TipPosition());
-		}
 
-		//================================================================================================
-		//		衝突処理
-		//================================================================================================
-		for (size_t currentIndex = 0; currentIndex < pendulums.size(); currentIndex++){
-			tips[currentIndex]->SetColor(WHITE);
+			//================================================================================================
+			//      衝突処理
+			//================================================================================================
+			for (size_t i = 0; i < pendulums.size(); i++){
+				tips[i]->SetColor(0xFFFFFFff); // WHITE
+			}
 
-			// 次の要素のインデックスを計算
-			size_t next_index = (currentIndex + 1) % pendulums.size();
+			for (size_t i = 0; i < pendulums.size(); i++){
+				for (size_t j = i + 1; j < pendulums.size(); j++){
+					if (IsCollision(tips[i].get(), tips[j].get())){
+						//わかりやすいように色を変える
+						tips[i]->SetColor(0xFF0000ff); // RED
+						tips[j]->SetColor(0xFF0000ff); // RED
+						pendulums[i].angle = pendulums[j].angle;
+						// 衝突後の角速度を計算（運動量保存の法則）
+						float mass1 = pendulums[i].mass;
+						float mass2 = pendulums[j].mass;
+						float vel1 = pendulums[i].angularVelocity;
+						float vel2 = pendulums[j].angularVelocity;
 
-			if (tips.size() >= 2){
-				// 現在の要素と次の要素の間の衝突判定
-				if (IsCollision(tips[currentIndex].get(), tips[next_index].get())){
-					tips[currentIndex]->SetColor(RED);
+						//各速度を設定
+						pendulums[i].angularVelocity = (vel1 * (mass1 - mass2) + 2 * mass2 * vel2) / (mass1 + mass2);
+						pendulums[j].angularVelocity = (vel2 * (mass2 - mass1) + 2 * mass1 * vel1) / (mass1 + mass2);
 
-					// 衝突後の角速度を計算
-					float tempAngularVelocity = pendulums[currentIndex].angularVelocity;
-					pendulums[currentIndex].angularVelocity = pendulums[next_index].angularVelocity;
-					pendulums[next_index].angularVelocity = tempAngularVelocity;
-
-
+					}
 				}
 			}
 		}
-
 
 		//================================================================================================
 		//		グリッドの描画
