@@ -33,6 +33,7 @@ void OBB::Update(){
     orientation_[2] = Vector3(rotateMat.m[2][0], rotateMat.m[2][1], rotateMat.m[2][2]);
 
     //worldMatrix
+    matWorld_ = Matrix4x4::MakeAffineMatrix(size_, rotation_, center_);
 }
 
 void OBB::Draw(Camera* camera){

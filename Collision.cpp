@@ -83,10 +83,10 @@ bool IsCollision(const Segment& segment, const Triangle* triangle){
 	return false;
 }
 
-bool isCollision(const AABB* aabb1, const AABB* aabb2){
-	if ((aabb1->GetMin().x <= aabb2->GetMax().x && aabb1->GetMax().x >= aabb2->GetMin().x) &&
-		(aabb1->GetMin().y <= aabb2->GetMax().y && aabb1->GetMax().y >= aabb2->GetMin().y) &&
-		(aabb1->GetMin().z <= aabb2->GetMax().z && aabb1->GetMax().z >= aabb2->GetMin().z)){
+bool isCollisionAABB(const AABB& aabb1, const AABB& aabb2){
+	if ((aabb1.GetMin().x <= aabb2.GetMax().x && aabb1.GetMax().x >= aabb2.GetMin().x) &&
+		(aabb1.GetMin().y <= aabb2.GetMax().y && aabb1.GetMax().y >= aabb2.GetMin().y) &&
+		(aabb1.GetMin().z <= aabb2.GetMax().z && aabb1.GetMax().z >= aabb2.GetMin().z)){
 		return true;
 	}
 	return false;
@@ -172,3 +172,54 @@ bool IsCollision(const OBB* obb, const Sphere* sphere){
 	return false;
 }
 
+
+/// <summary>
+/// 分離軸があるかの判定
+/// </summary>
+/// <param name="axis"></param>
+/// <param name="obb1"></param>
+/// <param name="obb2"></param>
+/// <returns></returns>
+bool TestSeparatingAxis(const Vector3& axis, const OBB* obb1, const OBB* obb2){
+	///投影された時の範囲
+	float r1 = obb1->GetSize().x * std::fabs(Dot(axis, obb1->GetOrientation()[0])) +
+		obb1->GetSize().y * std::fabs(Dot(axis, obb1->GetOrientation()[1])) +
+		obb1->GetSize().z * std::fabs(Dot(axis, obb1->GetOrientation()[2]));
+
+	float r2 = obb2->GetSize().x * std::fabs(Dot(axis, obb2->GetOrientation()[0])) +
+		obb2->GetSize().y * std::fabs(Dot(axis, obb2->GetOrientation()[1])) +
+		obb2->GetSize().z * std::fabs(Dot(axis, obb2->GetOrientation()[2]));
+
+	//obbの中心間の距離
+	Vector3 t = obb2->GetCenter() - obb1->GetCenter();
+	float dist = std::fabs(Dot(t, axis));
+
+	//trueなら分離軸ではない
+	return dist <= r1 + r2;
+}
+
+bool IsCollision(const OBB* obb1, const OBB* obb2){
+	Vector3 axes[15];
+	int axisCount = 0;
+	// 各OBBの軸ベクトルを分離軸とする
+	for (int i = 0; i < 3; ++i){
+		axes[axisCount++] = obb1->GetOrientation()[i];
+		axes[axisCount++] = obb2->GetOrientation()[i];
+	}
+	// 各OBBの軸ベクトルのクロス積を分離軸
+	for (int i = 0; i < 3; ++i){
+		for (int j = 0; j < 3; ++j){
+			axes[axisCount++] = Cross(obb1->GetOrientation()[i], obb2->GetOrientation()[j]);
+		}
+	}
+	// すべての軸に対して分離軸判定を行う
+	for (int i = 0; i < axisCount; ++i){
+		if (!TestSeparatingAxis(axes[i], obb1, obb2)){
+			// 分離軸が見つかった場合、OBBは衝突していない
+			return false;
+		}
+	}
+
+	// 分離軸が見つからなかった場合、OBBは衝突している
+	return true;
+}

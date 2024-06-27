@@ -34,10 +34,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	Vector3 size = {0.5f,0.5f,0.5f};
 	obb->Initialize(obbCenter, rotate, size);
 
-	std::unique_ptr<Sphere> sphere = std::make_unique<Sphere>();
-	Vector3 sphereCenter = {0.0f,0.0f,0.0f};
-	sphere->Init(sphereCenter, {0.0f,0.0f,0.0f}, 0.5f, WHITE);
-
+	std::unique_ptr<OBB> obb2 = std::make_unique<OBB>();
+	Vector3 obb2Center = {1.0f,0.0f,0.0f};
+	obb2->Initialize(obb2Center, rotate, size);
 	//obbと球
 	//sphereとobbどっちにもmInverseをかける
 
@@ -55,7 +54,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//		imguiの更新
 		//================================================================================================
 		obb->UpdateUI("obb");
-		sphere->UpdateImGui("sphere");
+		obb2->UpdateUI("obb2");
+
 		//================================================================================================
 		//		カメラの行列の計算
 		//================================================================================================
@@ -71,13 +71,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//		obb更新
 		//================================================================================================
 		obb->Update();
+		obb2->Update();
 
 		//================================================================================================
 		//		衝突判定
 		//================================================================================================
-		sphere->SetColor(WHITE);
-		if (IsCollision(obb.get(), sphere.get())){
-			sphere->SetColor(RED);
+		obb->SetColor(WHITE);
+		obb2->SetColor(WHITE);
+		if (IsCollision(obb.get(), obb2.get())){
+			obb->SetColor(RED);
+			obb2->SetColor(RED);
 		}
 
 
@@ -103,12 +106,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//		obbの描画
 		//================================================================================================
 		obb->Draw(camera);
+		obb2->Draw(camera);
 
 		
 		//================================================================================================
 		//		球体の描画
 		//================================================================================================
-		sphere->Draw(camera);
 
 		// フレームの終了
 		Novice::EndFrame();

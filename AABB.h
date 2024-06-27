@@ -5,8 +5,8 @@
 #include<string>
 class AABB{
 private:
-	Vector3 min_;
-	Vector3 max_;
+	Vector3 min_ {0,0,0};
+	Vector3 max_ {1,1,1};
 	uint32_t color_;
 
 public:
@@ -19,7 +19,7 @@ public:
 	/// <param name="min"></param>
 	/// <param name="max"></param>
 	/// <param name="color"></param>
-	void Initialize(Vector3 min,Vector3 max,uint32_t color);
+	void Initialize(Vector3 min,Vector3 max,uint32_t color = 0xffffffff);
 	/// <summary>
 	/// 更新
 	/// </summary>
