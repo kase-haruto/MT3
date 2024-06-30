@@ -47,6 +47,9 @@
     <Filter Include="Object\Shapes\Triangle">
       <UniqueIdentifier>{1b9f04b5-0acf-46cd-8d89-1c0ed0333691}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Object\Shapes\Ball">
+      <UniqueIdentifier>{bfe006c0-5bae-4687-80c0-f58f2cbe31b9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C:\KamataEngine\DirectXGame\base\DirectXCommon.cpp">
@@ -97,6 +100,12 @@
     </ClCompile>
     <ClCompile Include="Triangle.cpp">
       <Filter>Object\Shapes\Triangle</Filter>
+    </ClCompile>
+    <ClCompile Include="AABB.cpp">
+      <Filter>KamataEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Ball.cpp">
+      <Filter>Object\Shapes\Ball</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -204,6 +213,10 @@
     </ClInclude>
     <ClInclude Include="Triangle.h">
       <Filter>Object\Shapes\Triangle</Filter>
+    </ClInclude>
+    <ClInclude Include="AABB.h" />
+    <ClInclude Include="Ball.h">
+      <Filter>Object\Shapes\Ball</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

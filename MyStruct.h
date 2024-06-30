@@ -6,6 +6,10 @@
 static const float deltaTime = 1.0f / 60.0f;
 static const float gravity = 9.8f;
 
+static const float airResistanceCoefficient = 0.1f;
+static const float subSteps = 5;
+static const float subDeltaTime = deltaTime / subSteps;
+
 struct Line{
 	Vector3 origin;//始点
 	Vector3 diff;//終点への線分ベクトル
