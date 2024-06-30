@@ -17,6 +17,6 @@ struct Grid {
 	/// </summary>
 	/// <param name="viewProjectionMatrix"></param>
 	/// <param name="viewportMatrix"></param>
-	static void Draw(const Camera* cam);
+	static void Draw(const Camera* cam,const float widht = 2.0f);
 };
 

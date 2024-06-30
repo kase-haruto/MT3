@@ -56,3 +56,53 @@ Vector3 Cross(const Vector3& v1, const Vector3& v2){
 	return result;
 }
 
+Matrix4x4 MakeRotateAxisMatrix(const Vector3& axis, float angle){
+	Matrix4x4 result;
+	float cosAngle = std::cos(angle);
+	float sinAngle = std::sin(angle);
+	float oneMinusCos = 1.0f - cosAngle;
+
+	result.m[0][0] = cosAngle + axis.x * axis.x * oneMinusCos;
+	result.m[0][1] = axis.x * axis.y * oneMinusCos - axis.z * sinAngle;
+	result.m[0][2] = axis.x * axis.z * oneMinusCos + axis.y * sinAngle;
+	result.m[0][3] = 0.0f;
+
+	result.m[1][0] = axis.y * axis.x * oneMinusCos + axis.z * sinAngle;
+	result.m[1][1] = cosAngle + axis.y * axis.y * oneMinusCos;
+	result.m[1][2] = axis.y * axis.z * oneMinusCos - axis.x * sinAngle;
+	result.m[1][3] = 0.0f;
+
+	result.m[2][0] = axis.z * axis.x * oneMinusCos - axis.y * sinAngle;
+	result.m[2][1] = axis.z * axis.y * oneMinusCos + axis.x * sinAngle;
+	result.m[2][2] = cosAngle + axis.z * axis.z * oneMinusCos;
+	result.m[2][3] = 0.0f;
+
+	result.m[3][0] = 0.0f;
+	result.m[3][1] = 0.0f;
+	result.m[3][2] = 0.0f;
+	result.m[3][3] = 1.0f;
+
+	return result;
+}
+
+Vector3 ExtractEulerAngles(const Matrix4x4& matrix){
+	Vector3 euler;
+
+	if (matrix.m[2][0] < 1.0f){
+		if (matrix.m[2][0] > -1.0f){
+			euler.y = std::asin(matrix.m[2][0]);
+			euler.x = std::atan2(-matrix.m[2][1], matrix.m[2][2]);
+			euler.z = std::atan2(-matrix.m[1][0], matrix.m[0][0]);
+		} else{
+			euler.y = -static_cast< int >(std::numbers::pi) / 2.0f;
+			euler.x = -std::atan2(matrix.m[0][1], matrix.m[1][1]);
+			euler.z = 0.0f;
+		}
+	} else{
+		euler.y = static_cast< int >(std::numbers::pi) / 2.0f;
+		euler.x = std::atan2(matrix.m[0][1], matrix.m[1][1]);
+		euler.z = 0.0f;
+	}
+
+	return euler;
+}

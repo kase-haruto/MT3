@@ -1,5 +1,6 @@
 ﻿#include "Ball.h"
 #include"MyStruct.h"
+#include"MyFunc.h"
 
 Ball::Ball(){}
 
@@ -27,7 +28,25 @@ void Ball::Update(){
 
     // 位置を更新
     sphere_->SetCenter(sphere_->GetCenter() + velocity_);
+    UpdateRotation();
 }
+
+void Ball::UpdateRotation(){
+    // 進行方向と速度に基づいて回転角度を計算
+    float distance = Vector3::Length(velocity_);
+    float radius = sphere_->GetRadius();
+    float angle = distance / radius;
+
+    // 回転軸は速度ベクトルと垂直な方向
+    Vector3 rotationAxis = Vector3::Normalize(Cross(velocity_, {0.0f, 1.0f, 0.0f}));
+
+    // 回転を適用
+    Vector3 currentRotation = sphere_->GetRotate();
+    currentRotation += rotationAxis * angle;
+    
+    sphere_->SetRotate(currentRotation);
+}
+
 
 void Ball::Draw(Camera* cam){
 	sphere_->Draw(cam);

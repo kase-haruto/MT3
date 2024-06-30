@@ -104,6 +104,17 @@ void Reset(std::vector<Pendulum>& pendulums, bool& isMove){
 	isMove = false;
 }
 
+void Reset(std::vector<std::unique_ptr<Ball>>& balls, bool& isMove){
+	balls.clear(); // resize(0) ではなく clear() を使用する
+	auto ball = std::make_unique<Ball>(); // 型推論を使用する
+	ball->Initialize({0.0f, 0.0f, -3.0f}, 0.25f, 1.0f, WHITE);
+	Vector3 initVel = {0.0f, 0.0f, 0.08f};
+	ball->SetVelocity(initVel);
+	balls.push_back(std::move(ball));
+
+	isMove = false;
+}
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 
@@ -146,12 +157,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 
 	std::vector<std::unique_ptr<Ball>> balls;
 	std::unique_ptr<Ball> ball = std::make_unique<Ball>();
-	ball->Initialize({0.0f,0.0f,-3.0f}, 0.25f,1.0f, WHITE);
-	Vector3 initVel = {0.0f,0.0f,0.07f};
+	ball->Initialize({0.0f,0.0f,-3.0f}, 0.25f, 1.0f, WHITE);
+	Vector3 initVel = {0.0f,0.0f,0.08f};
 	ball->SetVelocity(initVel);
 	balls.push_back(std::move(ball));
 
-	
+
 
 	bool isMoveBalls = false;
 	int scene = 1;
@@ -211,9 +222,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 			#endif // _DEBUG
 
 
-
-
-
 				//================================================================================================
 				// 振り子の計算
 				//================================================================================================
@@ -240,27 +248,47 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 					//================================================================================================
 					//      衝突処理
 					//================================================================================================
-					for (size_t i = 0; i < pendulums.size(); i++){
-						tips[i]->SetColor(0xFFFFFFff); // WHITE
-					}
+				//	for (size_t i = 0; i < pendulums.size(); i++){
+				//		tips[i]->SetColor(0xFFFFFFff); // WHITE
+				//	}
 
-					for (size_t i = 0; i < pendulums.size(); i++){
-						for (size_t j = i + 1; j < pendulums.size(); j++){
-							if (IsCollision(tips[i].get(), tips[j].get())){
-								//わかりやすいように色を変える
-								tips[i]->SetColor(0xFF0000ff); // RED
-								tips[j]->SetColor(0xFF0000ff); // RED
-								pendulums[i].angle = pendulums[j].angle;
-								// 衝突後の角速度を計算（運動量保存の法則）
-								float mass1 = pendulums[i].mass;
-								float mass2 = pendulums[j].mass;
-								float vel1 = pendulums[i].angularVelocity;
-								float vel2 = pendulums[j].angularVelocity;
+				//	for (size_t i = 0; i < pendulums.size(); i++){
+				//		for (size_t j = i + 1; j < pendulums.size(); j++){
+				//			if (IsCollision(tips[i].get(), tips[j].get())){
+				//				//わかりやすいように色を変える
+				//				tips[i]->SetColor(0xFF0000ff); // RED
+				//				tips[j]->SetColor(0xFF0000ff); // RED
+				//				pendulums[i].angle = pendulums[j].angle;
+				//				// 衝突後の角速度を計算（運動量保存の法則）
+				//				float mass1 = pendulums[i].mass;
+				//				float mass2 = pendulums[j].mass;
+				//				float vel1 = pendulums[i].angularVelocity;
+				//				float vel2 = pendulums[j].angularVelocity;
 
-								//各速度を設定
-								pendulums[i].angularVelocity = (vel1 * (mass1 - mass2) + 2 * mass2 * vel2) / (mass1 + mass2);
-								pendulums[j].angularVelocity = (vel2 * (mass2 - mass1) + 2 * mass1 * vel1) / (mass1 + mass2);
+				//				//各速度を設定
+				//				pendulums[i].angularVelocity = (vel1 * (mass1 - mass2) + 2 * mass2 * vel2) / (mass1 + mass2);
+				//				pendulums[j].angularVelocity = (vel2 * (mass2 - mass1) + 2 * mass1 * vel1) / (mass1 + mass2);
 
+				//			}
+				//		}
+				//	}
+				//}
+
+					for (size_t currentIndex = 0; currentIndex < pendulums.size(); currentIndex++){
+						tips[currentIndex]->SetColor(WHITE);
+
+						// 次の要素のインデックスを計算
+						size_t nextIndex = (currentIndex + 1) % pendulums.size();
+						if (tips.size() >= 2){
+							// 現在の要素と次の要素の間の衝突判定
+							if (IsCollision(tips[currentIndex].get(), tips[nextIndex].get())){
+								tips[currentIndex]->SetColor(RED);
+								pendulums[currentIndex].angle = pendulums[nextIndex].angle;
+
+								// 衝突後の角速度を計算
+								float tempAngularVelocity = pendulums[currentIndex].angularVelocity;
+								pendulums[currentIndex].angularVelocity = pendulums[nextIndex].angularVelocity;
+								pendulums[nextIndex].angularVelocity = tempAngularVelocity;
 							}
 						}
 					}
@@ -306,74 +334,84 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 				ImGui::SameLine();
 				if (ImGui::Button("stop")){ isMoveBalls = false; }
 				ImGui::SameLine();
+				if (ImGui::Button("reset")){ Reset(balls, isMoveBalls); }
+				ImGui::SameLine();
 				if (ImGui::Button("addPendulum")){ AddBalls(balls); }
+				Vector3 dir = balls[0]->GetVelocity();
+				ImGui::DragFloat3("mainBallDir", &dir.x, 0.001f);
+				dir.z = std::clamp(dir.z, balls[0]->GetVelocity().z, balls[0]->GetVelocity().z + 0.5f);
+				balls[0]->SetVelocity(dir);
+				Vector3 pos = balls[0]->GetCenter();
+				ImGui::DragFloat3("pos", &pos.x, 0.01f);
+				balls[0]->SetCenter(pos);
+				ImGui::Text("rotate%.1f,%.1f,%.1f", balls[0]->GetRotate().x, balls[0]->GetRotate().y, balls[0]->GetRotate().z);
 				ImGui::End();
 
 			#endif // _DEBUG
 
-				
-					//========================================================================
-					//		ボールの更新処理
-					//========================================================================
-					if (isMoveBalls){
-						for (size_t i = 0; i < balls.size(); i++){
-							balls[i]->Update();
-						}
+
+				//========================================================================
+				//		ボールの更新処理
+				//========================================================================
+				if (isMoveBalls){
+					for (size_t i = 0; i < balls.size(); i++){
+						balls[i]->Update();
 					}
-					for (int step = 0; step < subSteps; ++step){
-						//========================================================================
-						//		球体同士の衝突判定
-						//========================================================================
-						if (balls.size() >= 2){
-							for (size_t i = 0; i < balls.size(); i++){
-								for (size_t j = i + 1; j < balls.size(); j++){
-									if (IsCollision(balls[i]->GetSphere(), balls[j]->GetSphere())){
+				}
+				for (int step = 0; step < subSteps; ++step){
+					//========================================================================
+					//		球体同士の衝突判定
+					//========================================================================
+					for (size_t i = 0; i < balls.size(); i++){
+						for (size_t j = i + 1; j < balls.size(); j++){
+							if (IsCollision(balls[i]->GetSphere(), balls[j]->GetSphere())){
 
-										// 球の情報を取得
-										float mass1 = balls[i]->GetMass();
-										float mass2 = balls[j]->GetMass();
-										Vector3 vel1 = balls[i]->GetVelocity();
-										Vector3 vel2 = balls[j]->GetVelocity();
+								// 球の情報を取得
+								float mass1 = balls[i]->GetMass();
+								float mass2 = balls[j]->GetMass();
+								Vector3 vel1 = balls[i]->GetVelocity();
+								Vector3 vel2 = balls[j]->GetVelocity();
 
-										Vector3 pos1 = balls[i]->GetCenter();
-										Vector3 pos2 = balls[j]->GetCenter();
+								Vector3 pos1 = balls[i]->GetCenter();
+								Vector3 pos2 = balls[j]->GetCenter();
 
-										// 衝突の法線方向を計算
-										Vector3 normal = Vector3::Normalize(pos2 - pos1);
+								// 衝突の法線方向を計算
+								Vector3 normal = Vector3::Normalize(pos2 - pos1);
 
-										// 速度の内積を計算
-										float v1n = Dot(vel1, normal);
-										float v2n = Dot(vel2, normal);
+								// 速度の内積を計算
+								float v1n = Dot(vel1, normal);
+								float v2n = Dot(vel2, normal);
 
-										// 新しい法線方向の速度を計算（運動量保存の法則と完全弾性衝突を仮定）
-										float v1nNew = (v1n * (mass1 - mass2) + 2.0f * mass2 * v2n) / (mass1 + mass2);
-										float v2nNew = (v2n * (mass2 - mass1) + 2.0f * mass1 * v1n) / (mass1 + mass2);
+								// 新しい法線方向の速度を計算（運動量保存の法則と完全弾性衝突を仮定）
+								float v1nNew = (v1n * (mass1 - mass2) + 2.0f * mass2 * v2n) / (mass1 + mass2);
+								float v2nNew = (v2n * (mass2 - mass1) + 2.0f * mass1 * v1n) / (mass1 + mass2);
 
-										// 法線方向の速度を更新
-										Vector3 v1nNewVec = normal * v1nNew;
-										Vector3 v2nNewVec = normal * v2nNew;
+								// 法線方向の速度を更新
+								Vector3 v1nNewVec = normal * v1nNew;
+								Vector3 v2nNewVec = normal * v2nNew;
 
-										// 接線方向の速度を計算（変わらない）
-										Vector3 v1t = vel1 - normal * v1n;
-										Vector3 v2t = vel2 - normal * v2n;
+								// 接線方向の速度を計算（変わらない）
+								Vector3 v1t = vel1 - normal * v1n;
+								Vector3 v2t = vel2 - normal * v2n;
 
-										// 新しい速度を計算
-										Vector3 newVel1 = v1t + v1nNewVec;
-										Vector3 newVel2 = v2t + v2nNewVec;
+								// 新しい速度を計算
+								Vector3 newVel1 = v1t + v1nNewVec;
+								Vector3 newVel2 = v2t + v2nNewVec;
 
-										balls[i]->SetVelocity(newVel1);
-										balls[j]->SetVelocity(newVel2);
-									}
-								}
+								balls[i]->SetVelocity(newVel1);
+								balls[j]->SetVelocity(newVel2);
+
+
 							}
 						}
 					}
+				}
 
 
 				//==========================================================================
 				//		グリッドの描画
 				//==========================================================================
-				Grid::Draw(camera);
+				Grid::Draw(camera, 4.0f);
 
 				//========================================================================
 				//		球体の描画
@@ -381,6 +419,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 				for (int i = 0; i < balls.size(); i++){
 					balls[i]->Draw(camera);
 				}
+				//向きの可視化
+				 // balls[0]の向きを描画
+				Vector3 velocity = balls[0]->GetVelocity();
+				Vector3 direction = Vector3::Normalize(velocity);
+				Vector3 startPosition = balls[0]->GetCenter();
+				float scale = 5.0f;
+
+				// 2D描画の場合、z成分は無視
+				Vector3 ndcPos = Matrix4x4::Transform(startPosition, camera->GetViewProjection());
+				Vector3 screenPos = Matrix4x4::Transform(ndcPos, camera->GetViewPort());
+
+				// 終点の計算
+				Vector3 endPos3D = {startPosition.x + direction.x * scale, startPosition.y + direction.y * scale, startPosition.z + direction.z * scale};
+				Vector3 endNDC = Matrix4x4::Transform(endPos3D, camera->GetViewProjection());
+				Vector3 endScreenPos = Matrix4x4::Transform(endNDC, camera->GetViewPort());
+				Novice::DrawLine(static_cast< int >(screenPos.x), static_cast< int >(screenPos.y), static_cast< int >(endScreenPos.x), static_cast< int >(endScreenPos.y), RED);
 
 
 				break;

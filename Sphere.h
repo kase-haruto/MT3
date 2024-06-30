@@ -23,6 +23,7 @@ public:
 
 	void Init(Vector3 center, Vector3 rotate, float radius, uint32_t color);
 	void UpdateImGui(const char* lavel);
+	void Update();
 	void Draw(const Camera* cam);
 	
 	///=================================
@@ -33,8 +34,8 @@ public:
 	void SetPreCenter(const Vector3& pos){ preCenter_ = pos; }
 	Vector3 GetPreCenter()const;
 
-	Vector3 GetRotate()const;
-	void GetRotate(const Vector3& rotate);
+	Vector3 GetRotate()const{ return transform_.rotation; }
+	void SetRotate(const Vector3& rotate){ transform_.rotation = rotate; };
 
 	float GetRadius()const;
 	void SetRadius(const float& radius);

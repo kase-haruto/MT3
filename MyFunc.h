@@ -1,7 +1,8 @@
 ﻿#pragma once
 #include"MyStruct.h"
 #include<cmath>
-
+#include"Matrix4x4.h"
+#include<numbers>
 /// <summary>
 /// ベクトルの内積を求めます
 /// </summary>
@@ -38,3 +39,6 @@ Vector3 Perpendicular(const Vector3& v);
 /// </summary>
 /// <returns>計算結果</returns>
 Vector3 Cross(const Vector3& v1, const Vector3& v2);
+
+Matrix4x4 MakeRotateAxisMatrix(const Vector3& axis, float angle);
+Vector3 ExtractEulerAngles(const Matrix4x4& matrix);
