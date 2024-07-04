@@ -27,38 +27,6 @@ Vector3 Vector3::Max(const Vector3& a, const Vector3& b){
 }
 
 
-//乗算
-Vector3 Vector3::operator*(const float& scalar) const {
-	float newX = x * scalar;
-	float newY = y * scalar;
-	float newZ = z * scalar;
-	return Vector3(newX, newY, newZ);
-}
-
-Vector3 Vector3::operator*=(const float& scalar) {
-	x *= scalar;
-	y *= scalar;
-	z *= scalar;
-	return Vector3(x, y, z);
-}
-
-Vector3 Vector3::operator*(const Vector3& other) const {
-	float newX = x * other.x;
-	float newY = y * other.y;
-	float newZ = z * other.z;
-	return Vector3(newX, newY, newZ);
-}
-
-Vector3 Vector3::operator*=(const Vector3& other) {
-	x *= other.x;
-	y *= other.y;
-	z *= other.z;
-	return Vector3(x, y, z);
-}
-
-Vector3 operator*(float scalar, const Vector3& vec){
-	return Vector3(vec.x * scalar, vec.y * scalar, vec.z * scalar);
-}
 
 
 //除算
