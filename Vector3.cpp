@@ -26,7 +26,12 @@ Vector3 Vector3::Max(const Vector3& a, const Vector3& b){
 	return Vector3(std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z));
 }
 
-
+Vector3 Vector3::operator*(const float& scalar) const{
+	float newX = x * scalar;
+	float newY = y * scalar;
+	float newZ = z * scalar;
+	return Vector3(newX, newY, newZ);
+}
 
 
 //除算

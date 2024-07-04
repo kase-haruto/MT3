@@ -219,3 +219,7 @@ void Matrix4x4::MatrixScreenPrint(int x, int y, const Matrix4x4& matrix, const c
 		}
 	}
 }
+
+Matrix4x4 Matrix4x4::operator*(const Matrix4x4& another) const{
+	return Matrix4x4::Multiply(*this, another);
+}
