@@ -16,6 +16,7 @@ void Sphere::Init(Vector3 center, Vector3 rotate, float radius, uint32_t color) 
 void Sphere::UpdateImGui(const char* lavel) {
 	ImGui::Begin(lavel);
 	ImGui::DragFloat3("translate", &transform_.translation.x, 0.01f);
+	ImGui::DragFloat3("rotation", &transform_.rotation.x, 0.01f);
 	ImGui::DragFloat("radius", &radius_, 0.01f);
 	ImGui::End();
 }

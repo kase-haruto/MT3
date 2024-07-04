@@ -38,6 +38,7 @@ public:
 	void SetRadius(const float& radius);
 	
 	Matrix4x4 GetWorldMatrix()const;
+	void SetWorldMatrix(const Matrix4x4& mat){ worldMatrix_ = mat; };
 	
 	uint32_t GetColor()const;
 	void SetColor(const uint32_t color);
