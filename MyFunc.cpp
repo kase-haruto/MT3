@@ -1,4 +1,5 @@
 ﻿#include"MyFunc.h"
+#include<Novice.h>
 
 /// <summary>
 /// ベクトルの内積を求めます
@@ -54,4 +55,46 @@ Vector3 Cross(const Vector3& v1, const Vector3& v2){
 	result.y = v1.z * v2.x - v1.x * v2.z;
 	result.z = v1.x * v2.y - v1.y * v2.x;
 	return result;
+}
+
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t){
+	return v1 + (v2 - v1) * t;
+}
+
+void DrawBezier(const Vector3& ctrlPoint0, const Vector3& ctrlPoint1, const Vector3& ctrlPoint2,
+				const Camera* camera, uint32_t color,bool isDrawPoints){
+	const size_t segmentCount = 30;
+
+	//スクリーン座標に変換
+	auto worldToScreen = [] (const Vector3& worldPos, const Camera* camera)->Vector3{
+		Vector3 ndcPos = Matrix4x4::Transform(worldPos, camera->GetViewProjection());
+		Vector3 screenPos = Matrix4x4::Transform(ndcPos, camera->GetViewPort());
+		return screenPos;
+		};
+
+	for (size_t i = 0; i < segmentCount; ++i){
+		float t1 = static_cast< float >(i) / segmentCount;
+		float t2 = static_cast< float >(i + 1) / segmentCount;
+
+		Vector3 p1 = Lerp(Lerp(ctrlPoint0, ctrlPoint1, t1), Lerp(ctrlPoint1, ctrlPoint2, t1), t1);
+		Vector3 p2 = Lerp(Lerp(ctrlPoint0, ctrlPoint1, t2), Lerp(ctrlPoint1, ctrlPoint2, t2), t2);
+
+		Vector3 screenPos1 = worldToScreen(p1,camera);
+		Vector3 screenPos2 = worldToScreen(p2, camera);
+
+		Novice::DrawLine(static_cast< int >(screenPos1.x),
+						 static_cast< int >(screenPos1.y),
+						 static_cast< int >(screenPos2.x),
+						 static_cast< int >(screenPos2.y), color);
+		}
+
+	if (isDrawPoints){
+		Vector3 ctrlPos = worldToScreen(ctrlPoint0, camera);
+		Vector3 ctrlPos1 = worldToScreen(ctrlPoint1, camera);
+		Vector3 ctrlPos2 = worldToScreen(ctrlPoint2, camera);
+		int radius = 3;
+		Novice::DrawEllipse(static_cast< int >(ctrlPos.x), static_cast< int >(ctrlPos.y), radius, radius, 0.0f, BLACK, kFillModeSolid);
+		Novice::DrawEllipse(static_cast< int >(ctrlPos1.x), static_cast< int >(ctrlPos1.y), radius, radius, 0.0f, BLACK, kFillModeSolid);
+		Novice::DrawEllipse(static_cast< int >(ctrlPos2.x), static_cast< int >(ctrlPos2.y), radius, radius, 0.0f, BLACK, kFillModeSolid);
+	}
 }

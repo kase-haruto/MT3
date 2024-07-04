@@ -1,6 +1,9 @@
 ﻿#pragma once
 #include"MyStruct.h"
+#include"Camera.h"
 #include<cmath>
+
+#include<vector>
 
 /// <summary>
 /// ベクトルの内積を求めます
@@ -38,3 +41,15 @@ Vector3 Perpendicular(const Vector3& v);
 /// </summary>
 /// <returns>計算結果</returns>
 Vector3 Cross(const Vector3& v1, const Vector3& v2);
+
+/// <summary>
+/// 線形補完
+/// </summary>
+/// <param name="v1"></param>
+/// <param name="v2"></param>
+/// <param name="t"></param>
+/// <returns></returns>
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
+
+void DrawBezier(const Vector3& ctrlPoint0, const Vector3& ctrolPoint1, const Vector3& ctrlPoint2,
+				const Camera* camera, uint32_t color,bool drawPoints = false);

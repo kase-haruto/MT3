@@ -1,9 +1,7 @@
-#include"Sphere.h"
-#include"Grid.h"
 #include"Camera.h"
 #include"MyFunc.h"
-#include"Collision.h"
 #include"MyStruct.h"
+#include"Grid.h"
 
 #include<memory>
 #include<Matrix4x4.h>
@@ -28,20 +26,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	Camera* camera = Camera::GetInstance();
 	camera->Initialize();
 
-	std::unique_ptr<Sphere> sphere = std::make_unique<Sphere>();
-	sphere->Init({0.0f,0.0f,0.0f}, {0.0f,0.0f,0.0f}, 0.1f, WHITE);
+	Vector3 ctrlPoints[3] = {
+		{-0.8f,0.58f,1.0f},
+		{1.76f,1.0f,-0.3f},
+		{0.94f,-0.7f,2.3f}
+	};
 
-	Pendulum pendulum;
-	pendulum.anchor = {0.0f,1.0f,0.0f};
-	pendulum.length = 0.8f;
-	pendulum.angle = 0.7f;
-	pendulum.angularVelocity = 0.0f;
-	pendulum.angularAcceleration = -(gravity / pendulum.length) * std::sin(pendulum.angle);
-	sphere->SetCenter(pendulum.TipPosition());
-	
-	bool isMove = false;
-
-	
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0){
@@ -55,46 +45,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//================================================================================================
 		//		imguiの更新
 		//================================================================================================
-		ImGui::Begin("pendulum");
-		if (ImGui::Button("start")){ isMove = true; }
+		ImGui::Begin("window");
+		ImGui::DragFloat3("ctrlP0", &ctrlPoints[0].x, 0.01f);
+		ImGui::DragFloat3("ctrlP1", &ctrlPoints[1].x, 0.01f);
+		ImGui::DragFloat3("ctrlP2", &ctrlPoints[2].x, 0.01f);
 		ImGui::End();
+
 
 		//================================================================================================
 		//		カメラの行列の計算
 		//================================================================================================
 		camera->Update();
 
-		//================================================================================================
-		//		振り子の計算
-		//================================================================================================
-		if (isMove){
-			pendulum.angularAcceleration = -(gravity / pendulum.length) * std::sin(pendulum.angle);
-			pendulum.angularVelocity += pendulum.angularAcceleration * deltaTime;
-			pendulum.angle += pendulum.angularVelocity * deltaTime;
-			sphere->SetCenter(pendulum.TipPosition());
-		}
-		
 
 		//================================================================================================
 		//		グリッドの描画
 		//================================================================================================
 		Grid::Draw(camera);
 
-		//================================================================================================
-		//		振り子の描画
-		//================================================================================================
-		
-		//スクリーン座標まで変換させる
-		Vector3 anchorNdcPos = Matrix4x4::Transform(pendulum.anchor, camera->GetViewProjection());
-		Vector3 tipNdcPos = Matrix4x4::Transform(sphere->GetCenter(), camera->GetViewProjection());
-		Vector3 anchorScreenPos = Matrix4x4::Transform(anchorNdcPos, camera->GetViewPort());
-		Vector3 tipScreenPos = Matrix4x4::Transform(tipNdcPos, camera->GetViewPort());
-		//ひもの描画
-		Novice::DrawLine(static_cast< int >(anchorScreenPos.x), static_cast< int >(anchorScreenPos.y),
-						 static_cast< int >(tipScreenPos.x), static_cast< int >(tipScreenPos.y),
-						 WHITE);
 
-		sphere->Draw(camera);
+		//================================================================================================
+		//		ベジエ曲線の描画
+		//================================================================================================
+		DrawBezier(ctrlPoints[0], ctrlPoints[1], ctrlPoints[2],camera, WHITE,true);
 
 
 		// フレームの終了
