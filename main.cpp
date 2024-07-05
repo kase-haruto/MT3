@@ -31,21 +31,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	
 
 	Spring spring {};
-	spring.anchor = {0.0f,0.0f,0.0f};
-	spring.naturalLength = 1.0f;
+	spring.anchor = {0.0f,1.0f,0.0f};
+	spring.naturalLength = 0.7f;
 	spring.stiffness = 100.0f;
 	spring.dampingCoefficient = 2.0f;
 
 	Ball ball {};
-	ball.position = {1.2f,0.0f,0.0f};
+	ball.position = {0.8f,0.2f,0.0f};
 	ball.mass = 2.0f;
 	ball.radius = 0.05f;
 	ball.color = BLUE;
 
 	std::unique_ptr<Sphere> sphere = std::make_unique<Sphere>();
 	sphere->Init(ball.position, {0.0f,0.0f,0.0f}, ball.radius, ball.color);
+	
+	//重力
+	const Vector3 kGravity {0.0f,-9.8f,0.0f};
 
-
+	bool isMove = false;
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0){
 		// フレームの開始
@@ -59,7 +62,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//		imguiの更新
 		//================================================================================================
 		ImGui::Begin("window");
-
+		if (ImGui::Button("Start")){ isMove = true; }
 		ImGui::End();
 
 		//================================================================================================
@@ -70,35 +73,40 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//================================================================================================
 		//		ばねの計算
 		//================================================================================================
-		Vector3 diff = ball.position - spring.anchor;
-		float length = Vector3::Length(diff);
-		if (length != 0.0f){
-			Vector3 direction = Vector3::Normalize(diff);
-			Vector3 restPosition = spring.anchor + direction * spring.naturalLength;
+		if (isMove){
+			Vector3 diff = ball.position - spring.anchor;
+			float length = Vector3::Length(diff);
+			if (length != 0.0f){
+				Vector3 direction = Vector3::Normalize(diff);
+				Vector3 restPosition = spring.anchor + direction * spring.naturalLength;
 
-			Vector3 displacement;
-			displacement.x= length * (ball.position.x - restPosition.x);
-			displacement.y= length * (ball.position.y - restPosition.y);
-			displacement.z= length * (ball.position.z - restPosition.z);
+				Vector3 displacement;
+				displacement.x = length * (ball.position.x - restPosition.x);
+				displacement.y = length * (ball.position.y - restPosition.y);
+				displacement.z = length * (ball.position.z - restPosition.z);
 
-			Vector3 restoringForce;
-			restoringForce.x = -spring.stiffness * displacement.x;
-			restoringForce.y = -spring.stiffness * displacement.y;
-			restoringForce.z = -spring.stiffness * displacement.z;
+				Vector3 restoringForce;
+				restoringForce.x = -spring.stiffness * displacement.x;
+				restoringForce.y = -spring.stiffness * displacement.y;
+				restoringForce.z = -spring.stiffness * displacement.z;
 
-			//減衰抵抗を計算する
-			Vector3 dampingForce;
-			dampingForce.x = -spring.dampingCoefficient * ball.velocity.x;
-			dampingForce.y = -spring.dampingCoefficient * ball.velocity.y;
-			dampingForce.z = -spring.dampingCoefficient * ball.velocity.z;
+				//減衰抵抗を計算する
+				Vector3 dampingForce;
+				dampingForce.x = -spring.dampingCoefficient * ball.velocity.x;
+				dampingForce.y = -spring.dampingCoefficient * ball.velocity.y;
+				dampingForce.z = -spring.dampingCoefficient * ball.velocity.z;
 
-			Vector3 force = restoringForce + dampingForce;
-			ball.acceleration = force / ball.mass;
+				Vector3 force = restoringForce + dampingForce;
+				ball.acceleration = force / ball.mass;
+			}
+
+			ball.acceleration += kGravity;
+
+			ball.velocity += ball.acceleration * deltaTime;
+			ball.position += ball.velocity * deltaTime;
+			sphere->SetCenter(ball.position);
 		}
-
-		ball.velocity += ball.acceleration * deltaTime;
-		ball.position += ball.velocity * deltaTime;
-		sphere->SetCenter(ball.position);
+		
 
 		//================================================================================================
 		//		グリッドの描画
