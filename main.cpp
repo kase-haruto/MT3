@@ -31,16 +31,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	Camera* camera = Camera::GetInstance();
 	camera->Initialize();
 
-	Vector3 a(0.2f, 1.0f, 0.0f);
-	Vector3 b(2.4f, 3.1f, 1.2f);
-	Vector3 c = a + b;
-	Vector3 d = a - b;
-	Vector3 e = a * 2.4f;
-	Vector3 rotate {0.4f,1.43f,-0.8f};
-	Matrix4x4 matRotateX = Matrix4x4::MakeRotateXMatrix(rotate.x);
-	Matrix4x4 matRotateY = Matrix4x4::MakeRotateYMatrix(rotate.y);
-	Matrix4x4 matRotateZ = Matrix4x4::MakeRotateZMatrix(rotate.z);
-	Matrix4x4 matRotate = matRotateX * matRotateY * matRotateZ;
+	Vector3 controlPoints[4] = {
+		{-0.8f,0.58f,1.0f},
+		{1.76f,1.0f,-0.3f},
+		{0.94f,-0.7f,2.3f},
+		{-0.53f,-0.26f,-0.15f},
+	};
 
 
 	// ウィンドウの×ボタンが押されるまでループ
@@ -56,17 +52,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//		imguiの更新
 		//================================================================================================
 		ImGui::Begin("window");
-		ImGui::Text("c:%f,%f,%f", c.x, c.y, c.z);
-		ImGui::Text("c:%f,%f,%f", d.x, d.y, d.z);
-		ImGui::Text("c:%f,%f,%f", e.x, e.y, e.z);
-		ImGui::Text(
-			"matrix:\n%f,%f,%f,%f\n%f,%f,%f,%f\n%f,%f,%f,%f\n%f,%f,%f,%f\n",
-			matRotate.m[0][0], matRotate.m[0][1], matRotate.m[0][2],
-			matRotate.m[0][3], matRotate.m[1][0], matRotate.m[1][1],
-			matRotate.m[1][2], matRotate.m[1][3], matRotate.m[2][0],
-			matRotate.m[2][1], matRotate.m[2][2], matRotate.m[2][3],
-			matRotate.m[3][0], matRotate.m[3][1], matRotate.m[3][2],
-			matRotate.m[3][3]);
+		ImGui::DragFloat3("ctrlP0", &controlPoints[0].x, 0.01f);
+		ImGui::DragFloat3("ctrlP1", &controlPoints[1].x, 0.01f);
+		ImGui::DragFloat3("ctrlP2", &controlPoints[2].x, 0.01f);
+		ImGui::DragFloat3("ctrlP3", &controlPoints[3].x, 0.01f);
 		ImGui::End();
 
 
@@ -80,7 +69,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//		グリッドの描画
 		//================================================================================================
 		Grid::Draw(camera);
-
+		DrawCatmullRom(controlPoints[0], controlPoints[1], controlPoints[2],
+					   controlPoints[3],camera, BLUE,true);
 
 		// フレームの終了
 		Novice::EndFrame();
