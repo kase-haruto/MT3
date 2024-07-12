@@ -8,9 +8,11 @@
 #include<memory>
 #include<Matrix4x4.h>
 #include<Novice.h>
+#include<cmath>
+
 
 #ifdef _DEBUG
-	#include<imgui.h>
+#include<imgui.h>
 #endif // _DEBUG
 
 const char kWindowTitle[] = "LE2A_09_カセ_ハルト_";
@@ -28,27 +30,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	Camera* camera = Camera::GetInstance();
 	camera->Initialize();
 
-	
 
-	Spring spring {};
-	spring.anchor = {0.0f,1.0f,0.0f};
-	spring.naturalLength = 0.7f;
-	spring.stiffness = 100.0f;
-	spring.dampingCoefficient = 2.0f;
+	const Vector3 center = {0.0f,0.0f,0.0f};
+	float radius = 0.8f;
 
-	Ball ball {};
-	ball.position = {0.8f,0.2f,0.0f};
-	ball.mass = 2.0f;
-	ball.radius = 0.05f;
-	ball.color = BLUE;
 
-	std::unique_ptr<Sphere> sphere = std::make_unique<Sphere>();
-	sphere->Init(ball.position, {0.0f,0.0f,0.0f}, ball.radius, ball.color);
-	
+	float angularVelocity = 3.14f;
+	float angle = 0.0f;
+
+
 	//重力
 	const Vector3 kGravity {0.0f,-9.8f,0.0f};
 
-	bool isMove = false;
+	std::unique_ptr<Sphere>sphere = std::make_unique<Sphere>();
+	sphere->Init({0.0f,0.0f,0.0f}, {0.0f,0.0f,0.0f}, 0.1f, WHITE);
+
+	//bool isMove = false;
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0){
 		// フレームの開始
@@ -61,52 +58,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//================================================================================================
 		//		imguiの更新
 		//================================================================================================
-		ImGui::Begin("window");
-		if (ImGui::Button("Start")){ isMove = true; }
-		ImGui::End();
+		//ImGui::Begin("window");
+		//if (ImGui::Button("Start")){ isMove = true; }
+		//ImGui::End();
+
 
 		//================================================================================================
 		//		カメラの行列の計算
 		//================================================================================================
 		camera->Update();
 
+
 		//================================================================================================
-		//		ばねの計算
+		//		角度の計算
 		//================================================================================================
-		if (isMove){
-			Vector3 diff = ball.position - spring.anchor;
-			float length = Vector3::Length(diff);
-			if (length != 0.0f){
-				Vector3 direction = Vector3::Normalize(diff);
-				Vector3 restPosition = spring.anchor + direction * spring.naturalLength;
+		Vector3 pos;
+		pos.x = center.x + radius * std::cos(angle);
+		pos.y = center.y + radius * std::sin(angle);
+		pos.z = 0.0f;
+		angle += angularVelocity * deltaTime;
+		sphere->SetCenter(pos);
 
-				Vector3 displacement;
-				displacement.x = length * (ball.position.x - restPosition.x);
-				displacement.y = length * (ball.position.y - restPosition.y);
-				displacement.z = length * (ball.position.z - restPosition.z);
-
-				Vector3 restoringForce;
-				restoringForce.x = -spring.stiffness * displacement.x;
-				restoringForce.y = -spring.stiffness * displacement.y;
-				restoringForce.z = -spring.stiffness * displacement.z;
-
-				//減衰抵抗を計算する
-				Vector3 dampingForce;
-				dampingForce.x = -spring.dampingCoefficient * ball.velocity.x;
-				dampingForce.y = -spring.dampingCoefficient * ball.velocity.y;
-				dampingForce.z = -spring.dampingCoefficient * ball.velocity.z;
-
-				Vector3 force = restoringForce + dampingForce;
-				ball.acceleration = force / ball.mass;
-			}
-
-			ball.acceleration += kGravity;
-
-			ball.velocity += ball.acceleration * deltaTime;
-			ball.position += ball.velocity * deltaTime;
-			sphere->SetCenter(ball.position);
-		}
-		
 
 		//================================================================================================
 		//		グリッドの描画
@@ -114,19 +86,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		Grid::Draw(camera);
 
 		//================================================================================================
-		//		振り子の描画
+		//		円の描画
 		//================================================================================================
-		
-		////スクリーン座標まで変換させる
-		Vector3 anchorNdcPos = Matrix4x4::Transform(spring.anchor, camera->GetViewProjection());
-		Vector3 anchorScreenPos = Matrix4x4::Transform(anchorNdcPos, camera->GetViewPort());
-		Vector3 ballNdcPos = Matrix4x4::Transform(ball.position, camera->GetViewProjection());
-		Vector3 ballScreenPos = Matrix4x4::Transform(ballNdcPos, camera->GetViewPort());
-		////ひもの描画
-		Novice::DrawLine(static_cast< int >(anchorScreenPos.x), static_cast< int >(anchorScreenPos.y),
-						 static_cast< int >(ballScreenPos.x), static_cast< int >(ballScreenPos.y),
-						 WHITE);
-
 		sphere->Draw(camera);
 
 
