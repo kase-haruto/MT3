@@ -28,17 +28,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	Camera* camera = Camera::GetInstance();
 	camera->Initialize();
 
+	
+	ConicalPendulum conicalPendulum;
+	conicalPendulum.anchor = {0.0f,1.0f,0.0f};
+	conicalPendulum.length = 0.8f;
+	conicalPendulum.halfApexAngle = 0.7f;
+	conicalPendulum.angle = 0.0f;
+	conicalPendulum.angularVelocity = 0.0f;
 	std::unique_ptr<Sphere> sphere = std::make_unique<Sphere>();
 	sphere->Init({0.0f,0.0f,0.0f}, {0.0f,0.0f,0.0f}, 0.1f, WHITE);
 
-	Pendulum pendulum;
-	pendulum.anchor = {0.0f,1.0f,0.0f};
-	pendulum.length = 0.8f;
-	pendulum.angle = 0.7f;
-	pendulum.angularVelocity = 0.0f;
-	pendulum.angularAcceleration = -(gravity / pendulum.length) * std::sin(pendulum.angle);
-	sphere->SetCenter(pendulum.TipPosition());
-	
+
 	bool isMove = false;
 
 	
@@ -68,10 +68,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//		振り子の計算
 		//================================================================================================
 		if (isMove){
-			pendulum.angularAcceleration = -(gravity / pendulum.length) * std::sin(pendulum.angle);
-			pendulum.angularVelocity += pendulum.angularAcceleration * deltaTime;
-			pendulum.angle += pendulum.angularVelocity * deltaTime;
-			sphere->SetCenter(pendulum.TipPosition());
+			conicalPendulum.angularVelocity = std::sqrt(9.8f / (conicalPendulum.length * std::cos(conicalPendulum.halfApexAngle)));
+			conicalPendulum.angle += conicalPendulum.angularVelocity * deltaTime;
+
+			float radius = std::sin(conicalPendulum.halfApexAngle) * conicalPendulum.length;
+			float height = std::cos(conicalPendulum.halfApexAngle) * conicalPendulum.length;
+			Vector3 ballPos;
+			ballPos.x = conicalPendulum.anchor.x + std::cos(conicalPendulum.angle) * radius;
+			ballPos.y = conicalPendulum.anchor.y - height;
+			ballPos.z = conicalPendulum.anchor.z - std::sin(conicalPendulum.angle) * radius;
+			sphere->SetCenter(ballPos);
 		}
 		
 
@@ -85,7 +91,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//================================================================================================
 		
 		//スクリーン座標まで変換させる
-		Vector3 anchorNdcPos = Matrix4x4::Transform(pendulum.anchor, camera->GetViewProjection());
+		Vector3 anchorNdcPos = Matrix4x4::Transform(conicalPendulum.anchor, camera->GetViewProjection());
 		Vector3 tipNdcPos = Matrix4x4::Transform(sphere->GetCenter(), camera->GetViewProjection());
 		Vector3 anchorScreenPos = Matrix4x4::Transform(anchorNdcPos, camera->GetViewPort());
 		Vector3 tipScreenPos = Matrix4x4::Transform(tipNdcPos, camera->GetViewPort());

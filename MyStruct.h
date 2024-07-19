@@ -38,3 +38,11 @@ struct Pendulum{
 		return pos;
 	}
 };
+
+struct ConicalPendulum{
+	Vector3 anchor;				//アンカーポイント。
+	float length;				//ひもの長さ
+	float halfApexAngle;		//円錐の頂点の半分
+	float angle;				//現在の角度
+	float angularVelocity;		//角速度
+};
