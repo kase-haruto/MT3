@@ -7,7 +7,7 @@
 
 class Sphere {
 
-private://メンバ変数
+protected://メンバ変数
 	Transform transform_;
 	float radius_;
 	Matrix4x4 worldMatrix_;
@@ -20,7 +20,7 @@ public:
 	Sphere(){}
 	virtual ~Sphere() {}
 
-	void Init(Vector3 center, Vector3 rotate, float radius, uint32_t color);
+	void Init(Vector3 center,float radius, uint32_t color);
 	void UpdateImGui(const char* lavel);
 	void Draw(const Camera* cam);
 	

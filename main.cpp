@@ -4,6 +4,8 @@
 #include"MyFunc.h"
 #include"Collision.h"
 #include"MyStruct.h"
+#include"Plane.h"
+#include"PhysicsSphere.h"
 
 #include<memory>
 #include<Matrix4x4.h>
@@ -28,16 +30,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	Camera* camera = Camera::GetInstance();
 	camera->Initialize();
 
-	
-	ConicalPendulum conicalPendulum;
-	conicalPendulum.anchor = {0.0f,1.0f,0.0f};
-	conicalPendulum.length = 0.8f;
-	conicalPendulum.halfApexAngle = 0.7f;
-	conicalPendulum.angle = 0.0f;
-	conicalPendulum.angularVelocity = 0.0f;
-	std::unique_ptr<Sphere> sphere = std::make_unique<Sphere>();
-	sphere->Init({0.0f,0.0f,0.0f}, {0.0f,0.0f,0.0f}, 0.1f, WHITE);
 
+	std::unique_ptr<Plane>plane = std::make_unique<Plane>();
+	Vector3 normal = Vector3::Normalize({-0.2f,0.9f,-0.3f});
+	plane->SetNormal(normal);
+	plane->SetDistance(0.0f);
+
+	std::unique_ptr< PhysicsSphere> ball = std::make_unique<PhysicsSphere>();
+	Vector3 ballCenter = {0.8f,1.2f,0.3f};
+	float mass = 2.0f;
+	Vector3 acceleration = {0.0f,-gravity,0.0f};
+	ball->Initialize(ballCenter,0.05f,WHITE);
+	ball->SetAcceleration(acceleration);
+	ball->SetMass(mass);
 
 	bool isMove = false;
 
@@ -55,8 +60,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		//================================================================================================
 		//		imguiの更新
 		//================================================================================================
-		ImGui::Begin("pendulum");
-		if (ImGui::Button("start")){ isMove = true; }
+		plane->UpdateImGui();
+		ball->Debug();
+
+		ImGui::Begin("setting");
+		if (ImGui::Button("isMove")){isMove = !isMove;}
 		ImGui::End();
 
 		//================================================================================================
@@ -65,19 +73,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		camera->Update();
 
 		//================================================================================================
-		//		振り子の計算
+		//		ballの計算
 		//================================================================================================
 		if (isMove){
-			conicalPendulum.angularVelocity = std::sqrt(9.8f / (conicalPendulum.length * std::cos(conicalPendulum.halfApexAngle)));
-			conicalPendulum.angle += conicalPendulum.angularVelocity * deltaTime;
+			ball->Update();
+			//画面外でリセット
+			if (ball->GetCenter().y <= -2){
+				ball->SetCenter(ballCenter);
+				ball->SetVelocity({0.0f,0.0f,0.0f});
+				ball->SetAcceleration(acceleration);
+				isMove = false;
+			}
+			
+		}
 
-			float radius = std::sin(conicalPendulum.halfApexAngle) * conicalPendulum.length;
-			float height = std::cos(conicalPendulum.halfApexAngle) * conicalPendulum.length;
-			Vector3 ballPos;
-			ballPos.x = conicalPendulum.anchor.x + std::cos(conicalPendulum.angle) * radius;
-			ballPos.y = conicalPendulum.anchor.y - height;
-			ballPos.z = conicalPendulum.anchor.z - std::sin(conicalPendulum.angle) * radius;
-			sphere->SetCenter(ballPos);
+		if (IsCollision(ball.get(), plane.get())){
+			Vector3 reflected = Reflect(ball->GetVelocity(), plane->GetNormal());
+			Vector3 projectToNormal = Projection(reflected, plane->GetNormal());
+			Vector3 movingDirection = reflected - projectToNormal;
+			ball->SetVelocity(projectToNormal *0.7f + movingDirection);
 		}
 		
 
@@ -87,20 +101,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		Grid::Draw(camera);
 
 		//================================================================================================
-		//		振り子の描画
+		//		平面
 		//================================================================================================
-		
-		//スクリーン座標まで変換させる
-		Vector3 anchorNdcPos = Matrix4x4::Transform(conicalPendulum.anchor, camera->GetViewProjection());
-		Vector3 tipNdcPos = Matrix4x4::Transform(sphere->GetCenter(), camera->GetViewProjection());
-		Vector3 anchorScreenPos = Matrix4x4::Transform(anchorNdcPos, camera->GetViewPort());
-		Vector3 tipScreenPos = Matrix4x4::Transform(tipNdcPos, camera->GetViewPort());
-		//ひもの描画
-		Novice::DrawLine(static_cast< int >(anchorScreenPos.x), static_cast< int >(anchorScreenPos.y),
-						 static_cast< int >(tipScreenPos.x), static_cast< int >(tipScreenPos.y),
-						 WHITE);
+		plane->Draw(camera, WHITE);
+	
+		//================================================================================================
+		//		球体
+		//================================================================================================
+		ball->Draw(camera);
 
-		sphere->Draw(camera);
 
 
 		// フレームの終了

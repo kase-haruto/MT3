@@ -5,9 +5,9 @@
 
 #include<imgui.h>
 
-void Sphere::Init(Vector3 center, Vector3 rotate, float radius, uint32_t color) {
+void Sphere::Init(Vector3 center,float radius, uint32_t color) {
 	transform_.translation = center;
-	transform_.rotation = rotate;
+	transform_.rotation = {0.0f,0.0f,0.0f};
 	radius_ = radius;
 	color_ = color;
 	worldMatrix_ = Matrix4x4::MakeAffineMatrix({ 1.0f,1.0f,1.0f }, transform_.rotation, transform_.translation);

@@ -38,3 +38,5 @@ Vector3 Perpendicular(const Vector3& v);
 /// </summary>
 /// <returns>計算結果</returns>
 Vector3 Cross(const Vector3& v1, const Vector3& v2);
+
+Vector3 Reflect(const Vector3& input, const Vector3& normal);

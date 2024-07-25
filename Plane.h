@@ -35,5 +35,8 @@ public:
 
 	const Vector3 GetNormal()const{ return normal_; }
 	const float GetDistance()const{ return distance_; }
+
+	void SetNormal(const Vector3& normal){ normal_ = normal; }
+	void SetDistance(const float distance){ distance_ = distance; }
 };
 
